@@ -40,8 +40,7 @@ def check_length(labels, result, atoms):
         A single atoms object.
     """
     if len(result) != len(labels):
-        msg = str(len(labels)) + '/' + str(len(result)) + \
-            ' labels/fingerprint mismatch.'
+        msg = f'{len(labels)}/{len(result)} labels/fingerprint mismatch.'
         if 'id' in atoms.info:
             msg += ' database id: ' + str(atoms.info['id'])
             msg += ' ' + ' '.join([str(label) for label in labels])
@@ -153,12 +152,11 @@ class ConvolutedFingerprintGenerator(BaseGenerator):
         if atoms is None:
             return labels
 
-        if 'bulk_atoms' in atoms.subsets:
-            bulk = atoms.subsets['bulk_atoms']
-            numbers = atoms.numbers[bulk]
-            connectivity = atoms.connectivity[bulk]
-        else:
+        if 'bulk_atoms' not in atoms.subsets:
             raise NotImplementedError("bulk convoluted fingerprint.")
+        bulk = atoms.subsets['bulk_atoms']
+        numbers = atoms.numbers[bulk]
+        connectivity = atoms.connectivity[bulk]
         slab_numbers = atoms.numbers
         dat_b = list_mendeleev_params(numbers, params=self.slab_params)
         dat = list_mendeleev_params(slab_numbers, params=self.slab_params)
@@ -264,12 +262,11 @@ class ConvolutedFingerprintGenerator(BaseGenerator):
         if atoms is None:
             return labels
 
-        if 'termination_atoms' in atoms.subsets:
-            term = atoms.subsets['termination_atoms']
-            numbers = atoms.numbers[term]
-            connectivity = atoms.connectivity[term]
-        else:
+        if 'termination_atoms' not in atoms.subsets:
             raise NotImplementedError("term convoluted fingerprint.")
+        term = atoms.subsets['termination_atoms']
+        numbers = atoms.numbers[term]
+        connectivity = atoms.connectivity[term]
         slab_numbers = atoms.numbers
         dat_t = list_mendeleev_params(numbers, params=self.slab_params)
         dat = list_mendeleev_params(slab_numbers, params=self.slab_params)

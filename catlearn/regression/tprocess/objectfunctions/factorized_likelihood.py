@@ -67,7 +67,12 @@ class FactorizedLogLikelihood(Object_functions):
         D,U,Y_p,UTY,KXX,n_data=self.get_eig(TP,X,Y,dis_m)
         noise,nlp=self.maximize_noise(TP,X,Y_p,parameters_set,parameters,prior,UTY,D,n_data)
         hp.update(dict(noise=np.array([noise]).reshape(-1)))
-        sol['x']=np.array(sum([list(np.array(hp[para]).reshape(-1)) for para in parameters_set],[]))
+        sol['x'] = np.array(
+            sum(
+                (list(np.array(hp[para]).reshape(-1)) for para in parameters_set),
+                [],
+            )
+        )
         sol['hp']=hp.copy()
         sol['TP']=self.update(TP,hp)
         sol['nfev']+=1

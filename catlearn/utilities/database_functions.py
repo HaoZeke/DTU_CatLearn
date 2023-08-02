@@ -38,7 +38,7 @@ class DescriptorDatabase(object):
         """
         cstring = 'uuid text'
         for i in names:
-            cstring += ', %s float' % i
+            cstring += f', {i} float'
 
         # Create a table
         self.cursor.execute("""CREATE TABLE IF NOT EXISTS %(table)s
@@ -73,7 +73,7 @@ class DescriptorDatabase(object):
             contain floats corresponding to the descriptor names provided.
         """
         qm = '(?'
-        for i in range(len(descriptor_names)):
+        for _ in range(len(descriptor_names)):
             qm += ',?'
         qm += ')'
 
@@ -120,26 +120,30 @@ class DescriptorDatabase(object):
             d = names[0]
             if len(names) > 1:
                 for i in names[1:]:
-                    d += ', %s' % i
+                    d += f', {i}'
             names = d
 
         data = []
         if unique_id is None:
-            for row in self.cursor.execute("SELECT %(desc)s FROM %(table)s"
-                                           % {'desc': names,
-                                              'table': self.table}):
-                data.append(row)
+            data.extend(
+                iter(
+                    self.cursor.execute(
+                        "SELECT %(desc)s FROM %(table)s"
+                        % {'desc': names, 'table': self.table}
+                    )
+                )
+            )
         else:
             sql = "SELECT %(desc)s FROM %(table)s WHERE uuid=?" \
-                % {'desc': names, 'table': self.table}
-            self.cursor.execute(sql, [('%s' % unique_id)])
+                    % {'desc': names, 'table': self.table}
+            self.cursor.execute(sql, [f'{unique_id}'])
             data = self.cursor.fetchall()[0]
 
         return np.asarray(data)
 
     def get_column_names(self):
         """Function to get the of a supplied table column names."""
-        cursor = self.conn.execute('select * from %s' % self.table)
+        cursor = self.conn.execute(f'select * from {self.table}')
 
         return [description[0] for description in cursor.description]
 
@@ -246,11 +250,9 @@ class FingerprintDB():
         try:
             self.c.execute("""INSERT INTO images (ase_id, identity)
             VALUES(?, ?)""", (asedb_entry.unique_id, identity))
-        except(IntegrityError):
+        except IntegrityError:
             if self.verbose:
-                print('ASE ID with identifier already defined: {} {}'.format(
-                    asedb_entry.id,
-                    identity))
+                print(f'ASE ID with identifier already defined: {asedb_entry.id} {identity}')
 
         return asedb_entry.id
 
@@ -274,9 +276,9 @@ class FingerprintDB():
         try:
             self.c.execute("""INSERT INTO parameters (symbol, description)
             VALUES(?, ?)""", (symbol, description))
-        except(IntegrityError):
+        except IntegrityError:
             if self.verbose:
-                print('Symbol already defined: {}'.format(symbol))
+                print(f'Symbol already defined: {symbol}')
 
         # Each instance needs to be commited to ensure no overwriting.
         # This could potentially result in slowdown.
@@ -307,7 +309,7 @@ class FingerprintDB():
             res = self.c.fetchall()
         else:
             res = []
-            for i, s in enumerate(selection):
+            for s in selection:
                 self.c.execute("""SELECT pid, symbol, description
                 FROM parameters WHERE symbol = ?""", (s,))
                 res += [self.c.fetchone()]
@@ -351,10 +353,9 @@ class FingerprintDB():
         try:
             self.c.execute("""INSERT INTO fingerprints (image_id, param_id, value)
             VALUES(?, ?, ?)""", (str(image_id), int(param_id), float(value)))
-        except(IntegrityError):
+        except IntegrityError:
             if self.verbose:
-                print('Fingerprint already defined: {}, {}, {}'.format(
-                    image_id, param_id, value))
+                print(f'Fingerprint already defined: {image_id}, {param_id}, {value}')
 
     def get_fingerprints(self, ase_ids, params=[]):
         """Return values of provided parameters for each ase_id provided.

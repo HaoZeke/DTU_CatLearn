@@ -80,7 +80,7 @@ def grid(fun,x0,tp,parameters,X,Y,prior,dis_m,local_run=scipy_opt,maxiter=5000,j
     dim=len(x0)
     if n_each_dim is None:
         n_each_dim=int(maxiter**(1/dim))
-        n_each_dim=n_each_dim if n_each_dim>1 else 1
+        n_each_dim = max(n_each_dim, 1)
     if isinstance(n_each_dim,int):    
         n_each_dim=[n_each_dim]*dim
     # Make grid either with the same or different numbers in each dimension
@@ -96,16 +96,15 @@ def grid(fun,x0,tp,parameters,X,Y,prior,dis_m,local_run=scipy_opt,maxiter=5000,j
     # Set the calculator up 
     args=(tp,parameters,X,Y,prior,False,dis_m)
     sol={'fun':fun.function(x0,*args),'x':x0,'success':False}
-    nfev=1
     # Calculate the grid points
     for t in theta_r:
         f=fun.function(t,*args)
         if f<sol['fun']:
             sol['fun'],sol['x'],sol['success']=f,t,True
-    nfev+=len(theta_r)
+    nfev = 1 + len(theta_r)
     # Local optimize the best point if wanted
     local_maxiter=int(maxiter-nfev)
-    local_maxiter=0 if local_maxiter<0 else local_maxiter
+    local_maxiter = max(local_maxiter, 0)
     if optimize:
         args=(tp,parameters,X,Y,prior,jac,dis_m)
         mopt=local_run(fun.function,sol['x'],jac=jac,maxiter=int(maxiter-nfev),args=args,**local_kwargs)
@@ -122,7 +121,7 @@ def line(fun,x0,tp,parameters,X,Y,prior,dis_m,local_run=scipy_opt,maxiter=5000,j
     dim=len(x0)
     if n_each_dim is None or np.sum(n_each_dim)*loops>maxiter:
         n_each_dim=int(maxiter/(loops*dim))
-        n_each_dim=n_each_dim if n_each_dim>1 else 1
+        n_each_dim = max(n_each_dim, 1)
     if isinstance(n_each_dim,int):    
         n_each_dim=[n_each_dim]*dim
     # Make grid either with the same or different numbers in each dimension
@@ -139,7 +138,7 @@ def line(fun,x0,tp,parameters,X,Y,prior,dis_m,local_run=scipy_opt,maxiter=5000,j
     sol={'fun':fun.function(x0,*args),'x':x0,'success':False}
     nfev=1
     # Calculate the line points
-    for l in range(int(loops)):
+    for _ in range(int(loops)):
         dim_perm=np.random.permutation(list(range(dim)))
         for d in dim_perm:
             for t in lines[d]:
@@ -202,7 +201,7 @@ def line_search_scale(fun,x0,tp,parameters,X,Y,prior,dis_m,local_run=run_golden,
         from ..hptrans import Variable_Transformation
         hyper_var=Variable_Transformation().transf_para(parameters,tp,X,Y,use_bounds=use_bounds)
         dl=np.finfo(float).eps
-        lines=[np.linspace(0.0+dl,1.0-dl,ngrid) for p in range(len(x0))]
+        lines = [np.linspace(0.0+dl,1.0-dl,ngrid) for _ in range(len(x0))]
     else:
         lines=[np.linspace(bounds[p][0],bounds[p][1],ngrid) for p in range(len(x0))]
     lines=hyper_var.t_to_theta_lines(lines,parameters).T

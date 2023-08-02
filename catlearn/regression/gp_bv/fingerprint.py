@@ -36,9 +36,7 @@ class Fingerprint:
                 An array of the converted fingerprint for each Atoms systems
         '''
         Data_F=np.array([self.convert(atoms) for atoms in atoms_list])
-        if self.reduce_dim:
-            return self.reduce(Data_F,train=train)
-        return Data_F
+        return self.reduce(Data_F,train=train) if self.reduce_dim else Data_F
 
     def recreate(self,atoms_list,Data_F,gradient=False):
         '''Convert fingerprint back to atoms list

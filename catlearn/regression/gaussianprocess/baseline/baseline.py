@@ -11,7 +11,6 @@ class Baseline_calculator(Calculator):
         It uses a flat baseline with zero energy and forces.    
         """
         Calculator.__init__(self)
-        pass
     
     def calculate(self,atoms=None,properties=['energy', 'forces', 'uncertainty'],system_changes=all_changes):
         """
@@ -29,7 +28,6 @@ class Baseline_calculator(Calculator):
         else:
             energy=self.get_energy(atoms)
         self.results['energy']=energy
-        pass
 
     def get_energy(self,atoms):
         " Get only the energy. "

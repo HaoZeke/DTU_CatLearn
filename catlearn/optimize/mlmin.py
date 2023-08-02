@@ -52,7 +52,7 @@ class MLMin(object):
         self.fmax = 0.
         self.gp = None
         self.opt_type = 'MLMin'
-        self.version = self.opt_type + ' ' + __version__
+        self.version = f'{self.opt_type} {__version__}'
         self.fc = force_consistent
         print_version(self.version)
 
@@ -280,7 +280,7 @@ class MLMin(object):
 
             n_steps_performed = 0
 
-            while ml_converged is False:
+            while not ml_converged:
                 ml_opt.run(fmax=fmax*0.90, steps=1)
                 pos_ml = np.array(guess.positions).flatten()
                 self.list_interesting_points.append(pos_ml)
@@ -316,7 +316,7 @@ class MLMin(object):
                                  objective='min', kappa=-1.0)
             if self.acq == 'lcb':
                 e_minus_unc = np.array(self.list_interesting_energies) - \
-                              np.array(self.list_interesting_uncertainties)
+                                  np.array(self.list_interesting_uncertainties)
                 acq_values = -e_minus_unc
             if self.acq == 'min_energy':
                 acq_values = -np.array(self.list_interesting_energies)

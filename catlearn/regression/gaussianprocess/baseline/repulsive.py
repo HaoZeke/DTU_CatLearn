@@ -12,7 +12,6 @@ class Repulsion_calculator(Baseline_calculator):
         """
         Calculator.__init__(self)
         self.r_scale=r_scale
-        pass
         
     def get_energy(self,atoms):
         " Get only the energy. "

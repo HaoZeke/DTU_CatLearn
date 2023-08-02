@@ -35,8 +35,7 @@ def optimistic(y_best, predictions, uncertainty):
     uncertainty : list
         Uncertainties associated with the predictions.
     """
-    metric = np.ravel(predictions) + np.ravel(uncertainty) - y_best
-    return metric
+    return np.ravel(predictions) + np.ravel(uncertainty) - y_best
 
 
 def UCB(predictions, uncertainty, objective='max', kappa=1.5):
@@ -115,8 +114,7 @@ def proximity(y_best, predictions, uncertainty=None):
     uncertainty : list
         Uncertainties associated with the predictions.
     """
-    metric = -np.abs(np.ravel(predictions) - y_best)
-    return metric
+    return -np.abs(np.ravel(predictions) - y_best)
 
 
 def optimistic_proximity(y_best, predictions, uncertainty):
@@ -131,8 +129,7 @@ def optimistic_proximity(y_best, predictions, uncertainty):
     uncertainty : list
         Uncertainties associated with the predictions.
     """
-    metric = np.ravel(uncertainty) - np.abs(np.ravel(predictions) - y_best)
-    return metric
+    return np.ravel(uncertainty) - np.abs(np.ravel(predictions) - y_best)
 
 
 def probability_density(y_best, predictions, uncertainty):
@@ -166,8 +163,6 @@ def cluster(train_features, targets, test_features, predictions, k_means=3):
     k_means : int
         Number of clusters.
     """
-    fit = []
-
     cf = cluster_features(
         train_matrix=train_features, train_target=targets,
         k_means=k_means, test_matrix=test_features,
@@ -176,10 +171,9 @@ def cluster(train_features, targets, test_features, predictions, k_means=3):
 
     train_count = Counter(cf['train_order'])
 
-    for i, c in enumerate(cf['test_order']):
-        fit.append(predictions[i] / train_count[c])
-
-    return fit
+    return [
+        predictions[i] / train_count[c] for i, c in enumerate(cf['test_order'])
+    ]
 
 
 def rank(targets, predictions, uncertainty, train_features=None,

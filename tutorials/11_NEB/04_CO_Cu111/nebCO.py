@@ -60,7 +60,7 @@ dyn.run(fmax=0.01)
 # 2.A. NEB using ASE #########################################################
 
 images_ase = [slab]
-for i in range(n_images-1):
+for _ in range(n_images-1):
     image = slab.copy()
     # Set constraints and calculator:
     image.set_constraint(constraint)

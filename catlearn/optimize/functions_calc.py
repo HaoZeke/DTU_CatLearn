@@ -20,7 +20,7 @@ class MultiModal(Calculator):
         self.forces = np.zeros((len(self.atoms), 3))
         forces = self.forces
 
-        x = self.atoms.get_positions()[0][0:2]
+        x = self.atoms.get_positions()[0][:2]
 
         def multim(x, y, A, B, xmin, ymin):
 
@@ -247,7 +247,7 @@ class Himmelblau(Calculator):
         self.forces = np.zeros((len(self.atoms), 3))
         forces = self.forces
 
-        x = self.atoms.get_positions()[0][0:2]
+        x = self.atoms.get_positions()[0][:2]
 
         energy = (x[0]**2 + x[1] -11)**2 + (x[0] + x[1]**2 -7)**2
 

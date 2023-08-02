@@ -125,7 +125,7 @@ def _distance_hist(atoms, bins, bounds, mic=True, element=None,
 
     n = 0
     dist, x0 = np.histogram([], bins=bins, range=bounds)
-    for atom, row in enumerate(d):
+    for row in d:
         h, x = np.histogram(row, bins=bins, range=bounds)
         assert np.allclose(x, x0)
         dist = np.add(dist, h)

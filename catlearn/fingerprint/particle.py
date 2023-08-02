@@ -85,7 +85,7 @@ class ParticleFingerprintGenerator(BaseGenerator):
         if data is None:
             msg = 'Class must have atom_types set to return feature names.'
             assert hasattr(self, 'atom_types') and self.atom_types is not \
-                None, msg
+                    None, msg
             names = []
             for i in self.atom_types:
                 names += ['{0}_{1}_nnmat'.format(i, j)
@@ -94,8 +94,10 @@ class ParticleFingerprintGenerator(BaseGenerator):
 
         # WARNING: Will be set permanently whichever atom is first passed.
         if self.atom_types is None:
-            msg = 'atom_types variable will be set permanently to whichever '
-            msg += 'atom object is first passed'
+            msg = (
+                'atom_types variable will be set permanently to whichever '
+                + 'atom object is first passed'
+            )
             warnings.warn(msg)
             self.atom_types = sorted(frozenset(self.get_atomic_numbers(data)))
 
@@ -122,10 +124,7 @@ class ParticleFingerprintGenerator(BaseGenerator):
             nnmat[i] /= len([j for j in range(len(data))
                              if data[int(j)].number == el])
 
-        # convert matrix to vector and replace np.nan values.
-        nnlist = np.nan_to_num(nnmat.flatten())
-
-        return nnlist
+        return np.nan_to_num(nnmat.flatten())
 
     def bond_count_vec(self, data):
         """Bond counting with a distribution measure for coordination.
@@ -168,8 +167,10 @@ class ParticleFingerprintGenerator(BaseGenerator):
 
         # WARNING: Will be set permanently whichever atom is first passed.
         if self.atom_types is None:
-            msg = 'atom_types variable will be set permanently to whichever '
-            msg += 'atom object is first passed'
+            msg = (
+                'atom_types variable will be set permanently to whichever '
+                + 'atom object is first passed'
+            )
             warnings.warn(msg)
             self.atom_types = sorted(frozenset(self.get_atomic_numbers(data)))
 
@@ -184,8 +185,10 @@ class ParticleFingerprintGenerator(BaseGenerator):
         """Sum atoms with a certain number of connections."""
         # WARNING: Will be set permanently whichever atom is first passed.
         if self.atom_types is None:
-            msg = 'atom_types variable will be set permanently to whichever '
-            msg += 'atom object is first passed'
+            msg = (
+                'atom_types variable will be set permanently to whichever '
+                + 'atom object is first passed'
+            )
             warnings.warn(msg)
             self.atom_types = sorted(frozenset(self.get_atomic_numbers(data)))
 
@@ -193,9 +196,7 @@ class ParticleFingerprintGenerator(BaseGenerator):
         for an in self.atom_types:
             conn = get_atoms_connections(data, max_conn=self.max_bonds,
                                          no_count_types=[an])
-            for i in conn:
-                fp.append(i)
-
+            fp.extend(iter(conn))
         return fp
 
     def rdf_vec(self, data):

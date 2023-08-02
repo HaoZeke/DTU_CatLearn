@@ -40,17 +40,13 @@ def catmap_energy_landscape(fname, database_ids, prediction,
         d = c.get(dbid)
         n, species, name, phase, surf_lattice, facet, cell = \
             catmap._get_adsorbate_fields(d)
-        if site_specific and 'site' in d:
-            site = str(d.site)
-        else:
-            site = 'site'
+        site = str(d.site) if site_specific and 'site' in d else 'site'
         key = '_'.join([str(n), species, name, phase, surf_lattice,
                         facet, cell, site])
-        if key not in formation_energies:
-            formation_energies[key] = prediction[i]
-            std[key] = uncertainty[i]
-            dbids[key] = dbid
-        elif formation_energies[key] < prediction[i]:
+        if (
+            key not in formation_energies
+            or formation_energies[key] < prediction[i]
+        ):
             formation_energies[key] = prediction[i]
             std[key] = uncertainty[i]
             dbids[key] = dbid
@@ -63,8 +59,7 @@ def catmap_energy_landscape(fname, database_ids, prediction,
 
 def catmap_pickle(fname):
     f = open(fname, 'r')
-    catmap_model = json.load(f)
-    return catmap_model
+    return json.load(f)
 
 
 def get_rate_control(state, catmap_model):

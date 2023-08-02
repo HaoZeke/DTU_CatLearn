@@ -7,8 +7,5 @@ class Cartesian(Fingerprint):
     def make_fingerprint(self,atoms,not_masked,**kwargs):
         " The calculation of the cartesian coordinates fingerprint "
         vector=atoms[not_masked].get_positions().reshape(-1)
-        if self.use_derivatives:
-            derivative=np.identity(len(vector))
-        else:
-            derivative=None
+        derivative = np.identity(len(vector)) if self.use_derivatives else None
         return vector,derivative

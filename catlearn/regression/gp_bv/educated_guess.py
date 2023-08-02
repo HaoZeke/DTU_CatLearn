@@ -20,7 +20,7 @@ class Educated_guess:
         " Get the best educated guess of the hyperparameters "
         if parameters is None:
             parameters=list(self.kernel.hp.keys())
-            parameters=parameters+['noise']
+            parameters += ['noise']
         parameters=sorted(parameters)
         if 'correction' in parameters:
             parameters.remove('correction')
@@ -37,15 +37,9 @@ class Educated_guess:
 
     def alpha_mean(self,X,Y):
         "The best educated guess for the prefactor by using standard deviation of the target"
-        if self.kernel_type in ['SE','SE_Deriv','SE_Multi','SE_Multi_Deriv']:
-            self.GP.prior.update(X,Y[:,0])
-            a_mean=np.sqrt(np.mean((Y[:,0]-self.GP.prior.get(X))**2))
-        else:
-            self.GP.prior.update(X,Y[:,0])
-            a_mean=np.sqrt(np.mean((Y[:,0]-self.GP.prior.get(X))**2))
-        if a_mean==0.0:
-            return 1.00
-        return a_mean
+        self.GP.prior.update(X,Y[:,0])
+        a_mean=np.sqrt(np.mean((Y[:,0]-self.GP.prior.get(X))**2))
+        return 1.00 if a_mean==0.0 else a_mean
 
     def alpha_bound(self,X,Y,scale=1):
         "Get the minimum and maximum ranges of the prefactor in the educated guess regime within a scale"

@@ -26,13 +26,11 @@ class TestChalcogenides(unittest.TestCase):
         images = database_to_list('data/bajdichWO32018_ads.db')
         images = images_connectivity(images)
         slabs = database_to_list('data/bajdichWO32018_slabs.db')
-        slabs_dict = {}
-        for slab in slabs:
-            slabs_dict[slab.info['id']] = slab
+        slabs_dict = {slab.info['id']: slab for slab in slabs}
         for i, atoms in enumerate(images):
             species = atoms.info['key_value_pairs']['species']
             atoms.subsets['ads_atoms'] = \
-                slab_positions2ads_index(atoms, slabs[i], species)
+                    slab_positions2ads_index(atoms, slabs[i], species)
             if 'slab_atoms' not in atoms.subsets:
                 atoms.subsets['slab_atoms'] = slab_index(atoms)
             if ('chemisorbed_atoms' not in atoms.subsets or

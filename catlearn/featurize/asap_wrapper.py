@@ -10,8 +10,10 @@ def ptm_structure_fpv(self, atoms):
     atoms : object
         An ase atoms object.
     """
-    msg = "ASAP must be installed to use this function:"
-    msg += " https://wiki.fysik.dtu.dk/asap"
+    msg = (
+        "ASAP must be installed to use this function:"
+        + " https://wiki.fysik.dtu.dk/asap"
+    )
     ptmdata = PTM(atoms)
 
     return ptmdata['structure']
@@ -25,8 +27,10 @@ def ptm_alloy_fpv(self, atoms):
     atoms : object
         An ase atoms object.
     """
-    msg = "ASAP must be installed to use this function:"
-    msg += " https://wiki.fysik.dtu.dk/asap"
+    msg = (
+        "ASAP must be installed to use this function:"
+        + " https://wiki.fysik.dtu.dk/asap"
+    )
     ptmdata = PTM(atoms)
 
     return ptmdata['alloytype']

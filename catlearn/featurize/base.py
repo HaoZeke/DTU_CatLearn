@@ -35,13 +35,11 @@ class BaseGenerator(object):
         neighbor_number : int
             Neighbor shell.
         """
-        if self.dtype == 'atoms':
-            extend_atoms_class(candidate)
-            nl = ase_neighborlist(candidate)
-        else:
-            raise NotImplementedError('{} data type not implemented.'.format(
-                self.dtype))
+        if self.dtype != 'atoms':
+            raise NotImplementedError(f'{self.dtype} data type not implemented.')
 
+        extend_atoms_class(candidate)
+        nl = ase_neighborlist(candidate)
         candidate.set_neighborlist(nl)
 
         return nl
@@ -78,8 +76,7 @@ class BaseGenerator(object):
         if self.dtype == 'atoms':
             return candidate.get_positions()
         else:
-            raise NotImplementedError('{} data type not implemented.'.format(
-                self.dtype))
+            raise NotImplementedError(f'{self.dtype} data type not implemented.')
 
     def get_atomic_numbers(self, candidate):
         """Function to return the atomic numbers.
@@ -92,8 +89,7 @@ class BaseGenerator(object):
         if self.dtype == 'atoms':
             return candidate.get_atomic_numbers()
         else:
-            raise NotImplementedError('{} data type not implemented.'.format(
-                self.dtype))
+            raise NotImplementedError(f'{self.dtype} data type not implemented.')
 
     def get_masses(self, candidate):
         """Function to return the atomic masses.
@@ -106,8 +102,7 @@ class BaseGenerator(object):
         if self.dtype == 'atoms':
             return candidate.get_masses()
         else:
-            raise NotImplementedError('{} data type not implemented.'.format(
-                self.dtype))
+            raise NotImplementedError(f'{self.dtype} data type not implemented.')
 
     def get_all_distances(self, candidate):
         """Function to return the atomic distances.
@@ -120,8 +115,7 @@ class BaseGenerator(object):
         if self.dtype == 'atoms':
             return candidate.get_all_distances()
         else:
-            raise NotImplementedError('{} data type not implemented.'.format(
-                self.dtype))
+            raise NotImplementedError(f'{self.dtype} data type not implemented.')
 
 
 def check_labels(labels, result, atoms):
@@ -138,8 +132,7 @@ def check_labels(labels, result, atoms):
         A single atoms object.
     """
     if len(result) != len(labels):
-        msg = str(len(labels)) + '/' + str(len(result)) + \
-            ' labels/fingerprint mismatch.'
+        msg = f'{len(labels)}/{len(result)} labels/fingerprint mismatch.'
         if 'id' in atoms.info:
             msg += ' database id: ' + str(atoms.info['id'])
             msg += ' ' + ' '.join([str(label) for label in labels])

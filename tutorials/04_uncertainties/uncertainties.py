@@ -208,8 +208,9 @@ target = np.array(afunc(train))
 target += noise_magnitude * np.random.randn(train_points, 1)
 # Heteroscedastic uncertainty:
 def au(x):
-    out = a_noise_magnitude * np.exp(-(x-a_noise_center)**2 / (2 * a_noise_width ** 2))
-    return out
+    return a_noise_magnitude * np.exp(
+        -((x - a_noise_center) ** 2) / (2 * a_noise_width**2)
+    )
 target += np.random.randn(train_points, 1) * au(train)
 
 # Generate test datapoints x.

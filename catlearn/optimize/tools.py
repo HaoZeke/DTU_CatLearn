@@ -28,10 +28,7 @@ def plotneb(trajectory='ML_NEB_catlearn.traj', view_path=True):
     e_barrier = np.max(e_pred)
     print('Energy barrier:', e_barrier, 'eV')
 
-    u_pred = []
-    for i in images:
-        u_pred.append(i.info['uncertainty'])
-
+    u_pred = [i.info['uncertainty'] for i in images]
     fig, ax = plt.subplots(figsize=(8, 5))
 
     prop_plots = dict(arrowstyle="<|-|>, head_width=0.5, head_length=1.",
@@ -47,12 +44,16 @@ def plotneb(trajectory='ML_NEB_catlearn.traj', view_path=True):
                 xycoords='data', xytext=(x_pred[np.argmax(e_pred)], 0.0),
                 textcoords='data', arrowprops=prop_plots)
 
-    ax.annotate(s=str(np.round(e_barrier, 3))+' eV',
-                xy=(x_pred[np.argmax(e_pred)], np.max(e_pred)/1.65),
-                xycoords='data',
-                fontsize=15.0,
-                textcoords='data', ha='right', rotation=90,
-                color='teal')
+    ax.annotate(
+        s=f'{str(np.round(e_barrier, 3))} eV',
+        xy=(x_pred[np.argmax(e_pred)], np.max(e_pred) / 1.65),
+        xycoords='data',
+        fontsize=15.0,
+        textcoords='data',
+        ha='right',
+        rotation=90,
+        color='teal',
+    )
 
     ax.plot(x_fit, e_fit, color='black', linestyle='--', linewidth=1.5)
 

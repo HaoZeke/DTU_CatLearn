@@ -61,19 +61,16 @@ class HyperparameterFitter:
         else:
             bounds=self.bounds.create(GP,X,Y,parameters,log,self.func.fun_name)
         # Whether to use distance matrix
-        if self.distance_matrix:
-            dis_m=GP.kernel.dist_m(X)
-        else:
-            dis_m=None
+        dis_m = GP.kernel.dist_m(X) if self.distance_matrix else None
         # Parameters for the optimization algorithm
         kwargs=copy.deepcopy(self.opt_algo.kwargs)
         self.opt_algo.fun_name=self.func.fun_name
         # Run the optimization
         sol=self.opt_algo.run(self.func.fun,GP,X,Y,theta,parameters,bounds=bounds,maxiter=int(maxiter),log=log,prior=prior,dis_m=dis_m,**kwargs)
         # If nmlp is chosen with nmll afterwards, then local optimization is performed in the end
-        if 'nmlp+nmll'==self.func.fun_name:
+        if self.func.fun_name == 'nmlp+nmll':
             sol=self.opt_without_prior(sol,GP,X,Y,parameters,maxiter,log,prior,dis_m,kwargs)
-        elif 'mnll'==self.func.fun_name or 'mnlp'==self.func.fun_name:
+        elif self.func.fun_name in ['mnll', 'mnlp']:
             return self.get_alphamax(sol,GP,parameters,X,Y,log=log,dis_m=dis_m)
         # Get the solution in right form
         sol=self.end_sol(sol,log,parameters,parameters_set)
@@ -82,10 +79,7 @@ class HyperparameterFitter:
     def make_parameters(self,hp,log,GP,dim):
         " Make the hyperparameter values and names ready for optimization "
         # Get initial hyperparameter values if not given
-        if hp is None:
-            hp=copy.deepcopy(GP.hp)
-        else:
-            hp=copy.deepcopy(hp)
+        hp = copy.deepcopy(GP.hp) if hp is None else copy.deepcopy(hp)
         # Make sure length hyperparameter in hp has the rigtht length for multiple length scales
         if 'length' in hp:
             if 'Multi' in str(GP.kernel):
@@ -97,7 +91,9 @@ class HyperparameterFitter:
         if 'correction' in parameters_set:
             parameters_set.remove('correction')
         theta=[list(np.array(hp[para]).reshape(-1)) for para in parameters_set]
-        parameters=sum([[para]*len(theta[p]) for p,para in enumerate(parameters_set)],[])
+        parameters = sum(
+            ([para] * len(theta[p]) for p, para in enumerate(parameters_set)), []
+        )
         theta=np.array(sum(theta,[]))
         # If log scale is used (log hp must not be given!)
         theta=np.abs(theta)
@@ -108,11 +104,7 @@ class HyperparameterFitter:
     def end_sol(self,sol,log,parameters,parameters_set):
         "Make the solution from the local or global optimization into the right form"
         # Get the final hyperparameters in linear space
-        if log:
-            sol['x']=np.exp(sol['x'])
-        else:
-            sol['x']=np.abs(sol['x'])
-
+        sol['x'] = np.exp(sol['x']) if log else np.abs(sol['x'])
         # Get the final hyperparameters
         hp={para:sol['x'][np.where(np.array(parameters)==para)[0]] for para in parameters_set}
         sol['hp']=hp
@@ -121,10 +113,7 @@ class HyperparameterFitter:
     def get_alphamax(self,sol,GP,parameters,X,Y,log=False,dis_m=None):
         " Calculate alpha from maximizing LML and then the respective noise from optimization "
         # Get the final hyperparameters in linear space
-        if log:
-            sol['x']=np.exp(sol['x'])
-        else:
-            sol['x']=np.abs(sol['x'])
+        sol['x'] = np.exp(sol['x']) if log else np.abs(sol['x'])
         GP=copy.deepcopy(GP)
         # Calculate maximized alpha value
         GP,parameters_set,sign_t=self.func.update_gp(GP,parameters,sol['x'])
@@ -150,7 +139,7 @@ class HyperparameterFitter:
         " Do a local optimization without prior distributions "
         self.func.fun_choice('nmll',log)
         maxiter=int(maxiter-sol['nfev'])
-        maxiter=100 if maxiter<100 else maxiter
+        maxiter = max(maxiter, 100)
         sol_l=self.opt_algo.local(self.func.fun,GP,X,Y,sol['x'],parameters,bounds=None,maxiter=maxiter,log=log,prior=prior,dis_m=dis_m,**kwargs)
         sol_l['nfev']+=sol['nfev']
         sol.update(sol_l)

@@ -65,45 +65,42 @@ class ChalcogenideFingerprintGenerator(BaseGenerator):
         if atoms is None:
             return ['site_charge_av', 'site_charge_sum',
                     'site_excess', 'slab_excess', 'slab_transferred']
-        else:
-            slab = atoms.subsets['slab_atoms']
-            if self.ion_number not in atoms.numbers[slab]:
-                return [0.] * 5
+        slab = atoms.subsets['slab_atoms']
+        if self.ion_number not in atoms.numbers[slab]:
+            return [0.] * 5
 
-            site = atoms.subsets['site_atoms']
-            cm = atoms.connectivity
-            anion_charges = np.zeros(len(atoms))
-            for i, atom in enumerate(slab):
-                if atoms.numbers[atom] == self.ion_number:
-                    anion_charges[atom] = self.ion_charge
-            transfer = cm * np.vstack(anion_charges)
-            row_sums = transfer.sum(axis=1)
-            shared = self.ion_charge * transfer / np.vstack(row_sums)
-            cation_charges = -np.nansum(shared, axis=0)
-            all_charges = anion_charges + cation_charges
+        site = atoms.subsets['site_atoms']
+        cm = atoms.connectivity
+        anion_charges = np.zeros(len(atoms))
+        for atom in slab:
+            if atoms.numbers[atom] == self.ion_number:
+                anion_charges[atom] = self.ion_charge
+        transfer = cm * np.vstack(anion_charges)
+        row_sums = transfer.sum(axis=1)
+        shared = self.ion_charge * transfer / np.vstack(row_sums)
+        cation_charges = -np.nansum(shared, axis=0)
+        all_charges = anion_charges + cation_charges
 
-            site_excess = 0
-            slab_excess = 0
-            transferred = 0
-            for j, atom in enumerate(slab):
-                charge = all_charges[atom]
-                oxistates = get_mendeleev_params(atoms.numbers[atom],
-                                                 ['oxistates'])[0]
-                if charge in oxistates:
-                    continue
-                else:
-                    oxi_index = np.argmin(np.abs(charge - np.array(oxistates)))
-                    oxistate = oxistates[oxi_index]
-                    transferred += abs(charge - oxistate)
-                    slab_excess += charge - oxistate
-                    if atom in site:
-                        site_excess += charge - oxistate
+        site_excess = 0
+        slab_excess = 0
+        transferred = 0
+        for atom in slab:
+            charge = all_charges[atom]
+            oxistates = get_mendeleev_params(atoms.numbers[atom],
+                                             ['oxistates'])[0]
+            if charge not in oxistates:
+                oxi_index = np.argmin(np.abs(charge - np.array(oxistates)))
+                oxistate = oxistates[oxi_index]
+                transferred += abs(charge - oxistate)
+                slab_excess += charge - oxistate
+                if atom in site:
+                    site_excess += charge - oxistate
 
-            site_charge_av = np.nanmean(all_charges[site])
-            site_charge_sum = np.nansum(all_charges[site])
+        site_charge_av = np.nanmean(all_charges[site])
+        site_charge_sum = np.nansum(all_charges[site])
 
-            return [site_charge_av, site_charge_sum,
-                    site_excess, slab_excess, transferred]
+        return [site_charge_av, site_charge_sum,
+                site_excess, slab_excess, transferred]
 
     def mean_cation(self, atoms=None):
         """Function that takes an atoms objects and returns a fingerprint
@@ -118,13 +115,12 @@ class ChalcogenideFingerprintGenerator(BaseGenerator):
         labels.append('ground_state_magmom_cation_av')
         if atoms is None:
             return labels
-        else:
-            numbers = [atoms[j].number for j in atoms.subsets['cation_atoms']]
-            dat = list_mendeleev_params(numbers, params=self.slab_params)
-            result = list(np.nanmean(dat, axis=0))
-            result += [np.nanmean([gs_magmom[z] for z in numbers])]
-            check_labels(labels, result, atoms)
-            return result
+        numbers = [atoms[j].number for j in atoms.subsets['cation_atoms']]
+        dat = list_mendeleev_params(numbers, params=self.slab_params)
+        result = list(np.nanmean(dat, axis=0))
+        result += [np.nanmean([gs_magmom[z] for z in numbers])]
+        check_labels(labels, result, atoms)
+        return result
 
     def min_cation(self, atoms=None):
         """Function that takes an atoms objects and returns a fingerprint
@@ -139,13 +135,12 @@ class ChalcogenideFingerprintGenerator(BaseGenerator):
         labels.append('ground_state_magmom_cation_min')
         if atoms is None:
             return labels
-        else:
-            numbers = [atoms[j].number for j in atoms.subsets['cation_atoms']]
-            dat = list_mendeleev_params(numbers, params=self.slab_params)
-            result = list(np.nanmin(dat, axis=0))
-            result += [np.nanmin([gs_magmom[z] for z in numbers])]
-            check_labels(labels, result, atoms)
-            return result
+        numbers = [atoms[j].number for j in atoms.subsets['cation_atoms']]
+        dat = list_mendeleev_params(numbers, params=self.slab_params)
+        result = list(np.nanmin(dat, axis=0))
+        result += [np.nanmin([gs_magmom[z] for z in numbers])]
+        check_labels(labels, result, atoms)
+        return result
 
     def max_cation(self, atoms=None):
         """Function that takes an atoms objects and returns a fingerprint
@@ -160,13 +155,12 @@ class ChalcogenideFingerprintGenerator(BaseGenerator):
         labels.append('ground_state_magmom_cation_max')
         if atoms is None:
             return labels
-        else:
-            numbers = [atoms[j].number for j in atoms.subsets['cation_atoms']]
-            dat = list_mendeleev_params(numbers, params=self.slab_params)
-            result = list(np.nanmax(dat, axis=0))
-            result += [np.nanmax([gs_magmom[z] for z in numbers])]
-            check_labels(labels, result, atoms)
-            return result
+        numbers = [atoms[j].number for j in atoms.subsets['cation_atoms']]
+        dat = list_mendeleev_params(numbers, params=self.slab_params)
+        result = list(np.nanmax(dat, axis=0))
+        result += [np.nanmax([gs_magmom[z] for z in numbers])]
+        check_labels(labels, result, atoms)
+        return result
 
     def median_cation(self, atoms=None):
         """Function that takes an atoms objects and returns a fingerprint
@@ -181,13 +175,12 @@ class ChalcogenideFingerprintGenerator(BaseGenerator):
         labels.append('ground_state_magmom_cation_med')
         if atoms is None:
             return labels
-        else:
-            numbers = [atoms[j].number for j in atoms.subsets['cation_atoms']]
-            dat = list_mendeleev_params(numbers, params=self.slab_params)
-            result = list(np.nanmedian(dat, axis=0))
-            result += [np.nanmedian([gs_magmom[z] for z in numbers])]
-            check_labels(labels, result, atoms)
-            return result
+        numbers = [atoms[j].number for j in atoms.subsets['cation_atoms']]
+        dat = list_mendeleev_params(numbers, params=self.slab_params)
+        result = list(np.nanmedian(dat, axis=0))
+        result += [np.nanmedian([gs_magmom[z] for z in numbers])]
+        check_labels(labels, result, atoms)
+        return result
 
     def sum_cation(self, atoms=None):
         """Function that takes an atoms objects and returns a fingerprint
@@ -202,10 +195,9 @@ class ChalcogenideFingerprintGenerator(BaseGenerator):
         labels.append('ground_state_magmom_cation_sum')
         if atoms is None:
             return labels
-        else:
-            numbers = [atoms[j].number for j in atoms.subsets['cation_atoms']]
-            dat = list_mendeleev_params(numbers, params=self.slab_params)
-            result = list(np.nansum(dat, axis=0))
-            result += [np.nansum([gs_magmom[z] for z in numbers])]
-            check_labels(labels, result, atoms)
-            return result
+        numbers = [atoms[j].number for j in atoms.subsets['cation_atoms']]
+        dat = list_mendeleev_params(numbers, params=self.slab_params)
+        result = list(np.nansum(dat, axis=0))
+        result += [np.nansum([gs_magmom[z] for z in numbers])]
+        check_labels(labels, result, atoms)
+        return result

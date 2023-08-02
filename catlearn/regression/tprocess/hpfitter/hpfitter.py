@@ -40,14 +40,25 @@ class HyperparameterFitter:
         tp=copy.deepcopy(TP)
         # Whether to use distance matrix
         dis_m=tp.kernel.distances(X) if self.distance_matrix else None
-        sol=self.optimization_method(self.func,theta,tp,parameters,X,Y,prior=prior,dis_m=dis_m,**self.opt_kwargs)
-        return sol
+        return self.optimization_method(
+            self.func,
+            theta,
+            tp,
+            parameters,
+            X,
+            Y,
+            prior=prior,
+            dis_m=dis_m,
+            **self.opt_kwargs
+        )
     
     def hp_to_theta(self,hp):
-        " Transform a dictionary of hyperparameters to a list of values and a list of parameter categories " 
+        " Transform a dictionary of hyperparameters to a list of values and a list of parameter categories "
         parameters_set=sorted(set(hp.keys()))
         theta=[list(np.array(hp[para]).reshape(-1)) for para in parameters_set]
-        parameters=sum([[para]*len(theta[p]) for p,para in enumerate(parameters_set)],[])
+        parameters = sum(
+            ([para] * len(theta[p]) for p, para in enumerate(parameters_set)), []
+        )
         theta=np.array(sum(theta,[]))
         return theta,parameters 
     

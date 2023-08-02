@@ -23,10 +23,6 @@ def cut_and_splice(parent_one, parent_two, index='random'):
     if index is 'random':
         cut_point = np.random.randint(1, len(parent_one), 1)[0]
     else:
-        raise NotImplementedError('{} cut index not implemented'.format(index))
+        raise NotImplementedError(f'{index} cut index not implemented')
 
-    # Join two parts of parents.
-    offspring = np.concatenate((parent_one[:cut_point],
-                                parent_two[cut_point:]))
-
-    return offspring
+    return np.concatenate((parent_one[:cut_point], parent_two[cut_point:]))

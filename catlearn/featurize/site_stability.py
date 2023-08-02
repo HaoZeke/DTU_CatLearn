@@ -141,7 +141,7 @@ def get_site_index(material, defect):
         boollist = [np.allclose(pos, defpos, rtol=1e-03) for defpos in deflist]
         site_detected.append(any(boollist))
     site_idx = [idx for idx, _ in enumerate(site_detected) if not _]
-    if len(site_idx) == 0:
+    if not site_idx:
         site_idx = [np.NAN]
     return site_idx[0]
 
@@ -155,8 +155,7 @@ def unique_set(iterable, feature_dim=2):
     """
     s = list(iterable)  # allows duplicate elements
     ch = chain.from_iterable(combinations(s, r) for r in range(feature_dim, feature_dim + 1))
-    sn = [x for x in ch]
-    return sn
+    return list(ch)
 
 
 
@@ -256,8 +255,7 @@ class Material:
                                                atomic_symbol=atomic_symbol,
                                                use_EMT=use_EMT)
         system_features = self.system_features
-        df = pd.concat([site_features, system_features], axis=1)
-        return df
+        return pd.concat([site_features, system_features], axis=1)
 
     def get_site_features(self, site_index, atomic_symbol=False, use_EMT=False):
         """
@@ -362,7 +360,7 @@ class Material:
             self._site_angles_mean = np.mean(self._site_angles)
             self._site_angles_std = np.std(self._site_angles)
         except:
-            print('This system has angle problems: %s' % str(self.composition))
+            print(f'This system has angle problems: {str(self.composition)}')
             self._site_angles_min = np.NAN
             self._site_angles_max = np.NAN
             self._site_angles_mean = np.NAN
@@ -416,9 +414,9 @@ class Material:
             ans.append(elid)
             e_val = element(el).nvalence()
             evals.append(e_val)
-            df['Z' + str(i)] = [elid]
-            df['n' + str(i)] = self.composition[el]
-            df['e_val' + str(i)] = [e_val]
+            df[f'Z{str(i)}'] = [elid]
+            df[f'n{str(i)}'] = self.composition[el]
+            df[f'e_val{str(i)}'] = [e_val]
 
         # mean
         df['Z_mean'] = [np.mean(ans)]
@@ -510,7 +508,7 @@ class SiteFeaturizer:
 
             # check if all energies are available
             if site['material'].total_energy is None or site['defect'].total_energy is None:
-                print('Skipping site: '+str(i))
+                print(f'Skipping site: {str(i)}')
             else:
                 newmat._total_energy = site['material'].total_energy
                 _ = newmat.cohesive_energy
@@ -624,10 +622,8 @@ class SiteFeaturizer:
         for i, atoms in enumerate(self.images):
             mat = Material(atoms)
             # Fast enough for this case:
-            for n in range(int(mat.natoms)):
-                us.append([i, n])
-        a = np.array(us)
-        return a
+            us.extend([i, n] for n in range(int(mat.natoms)))
+        return np.array(us)
 
     def select_specific_sites(self, site_selection):
         """
@@ -639,10 +635,11 @@ class SiteFeaturizer:
         self.sites = []
 
         for t in self.selected_sites:
-            RS = {}
-            RS['material_image_index'] = t[0]
-            RS['site_index'] = t[1]
-            RS['material'] = Material(self.images[t[0]])
+            RS = {
+                'material_image_index': t[0],
+                'site_index': t[1],
+                'material': Material(self.images[t[0]]),
+            }
             RS['material_composition'] = composition_name(RS['material'].atoms)
             RS['defect'] = Material(RS['material'].create_defect(site_index=t[1]))
             RS['defect_composition'] = composition_name(RS['defect'].atoms)
@@ -676,10 +673,11 @@ class SiteFeaturizer:
         self.selected_sites = new_candidates[random_sites]
 
         for t in self.selected_sites:
-            RS = {}
-            RS['material_image_index'] = t[0]
-            RS['site_index'] = t[1]
-            RS['material'] = Material(self.images[t[0]])
+            RS = {
+                'material_image_index': t[0],
+                'site_index': t[1],
+                'material': Material(self.images[t[0]]),
+            }
             RS['material_composition'] = composition_name(RS['material'].atoms)
             RS['defect'] = Material(RS['material'].create_defect(site_index=t[1]))
             RS['defect_composition'] = composition_name(RS['defect'].atoms)
@@ -759,9 +757,10 @@ class SiteFeaturizer:
         if self.sites is None:
             self.sites = []
 
-        RS = dict()
-        RS['material_image_index'] = len(self.sites)
-        RS['site_index'] = get_site_index(material, defect)
+        RS = {
+            'material_image_index': len(self.sites),
+            'site_index': get_site_index(material, defect),
+        }
         RS['material'] = Material(material, reference_dict=self.reference_dict)
         RS['material_composition'] = str(RS['material'].atoms.symbols)
         RS['defect'] = Material(defect, reference_dict=self.reference_dict)
@@ -782,7 +781,7 @@ class SiteFeaturizer:
         :return: Writes out pickle file.
         """
         if folderpath is None:
-            folderpath = os.getcwd() + '/'
+            folderpath = f'{os.getcwd()}/'
         if not folderpath.endswith('/'):
             folderpath = folderpath + '/'
         if filename is None:
@@ -803,16 +802,13 @@ class SiteFeaturizer:
         :return:
         """
         if folderpath is None:
-            folderpath = os.getcwd() + '/'
+            folderpath = f'{os.getcwd()}/'
         if not folderpath.endswith('/'):
             folderpath = folderpath + '/'
         if filename is None:
             filename = 'site_selection_' + datetime.datetime.now().strftime("%Y%m%d_%H%M") + '.tsv'
         os.makedirs(folderpath, exist_ok=True)
-        if not normalized:
-            df = self.site_features
-        else:
-            df = self.normalized_site_features
+        df = self.site_features if not normalized else self.normalized_site_features
         df.to_csv(folderpath + filename, sep='\t')
         return None
 
@@ -908,19 +904,16 @@ class GAFeatureSelection:
     @property
     def mean_population_fitness(self):
         """Computes average of population fitness metrics."""
-        m = np.mean([tup[2] for tup in self.population])
-        return m
+        return np.mean([tup[2] for tup in self.population])
 
     def population_percentile(self, percentile=75):
         """Computes percentile of population fitness metrics."""
-        m = np.percentile([tup[2] for tup in self.population], percentile)
-        return m
+        return np.percentile([tup[2] for tup in self.population], percentile)
 
     @property
     def max_population_fitness(self):
         """Computes max of population fitness metrics."""
-        m = np.max([tup[2] for tup in self.population])
-        return m
+        return np.max([tup[2] for tup in self.population])
 
     def random_genes(self, n=1):
         """
@@ -930,9 +923,12 @@ class GAFeatureSelection:
         """
         random.seed(self.random_state)
         if self.all_feature_combinations is None:
-            unique_combinations = []
-            for feature_combination in unique_set(list(range(self.total_features)), feature_dim=self.n_features):
-                unique_combinations.append(list(feature_combination))
+            unique_combinations = [
+                list(feature_combination)
+                for feature_combination in unique_set(
+                    list(range(self.total_features)), feature_dim=self.n_features
+                )
+            ]
             random.shuffle(unique_combinations)
             self.all_feature_combinations = unique_combinations
         selection = self.all_feature_combinations.copy()
@@ -969,13 +965,13 @@ class GAFeatureSelection:
         results = []
         for n_chromosome, chromosome in enumerate(chromosomes):
             if self.verbose:
-                print('Evaluating chromosome '+str(n_chromosome+1)+'/'+str(len(chromosomes)))
+                print(f'Evaluating chromosome {str(n_chromosome + 1)}/{len(chromosomes)}')
 
             X_chromosome = self.X[self.X.columns[chromosome]]
             chromosome_score = self.get_chromosome_score(X_chromosome=X_chromosome)
 
             if self.verbose:
-                print('Chromosome score: '+str(chromosome_score))
+                print(f'Chromosome score: {str(chromosome_score)}')
 
             results.append([chromosome, chromosome_score, chromosome_score])
         return sorted(results, reverse=True, key=lambda tup: tup[1])
@@ -984,7 +980,7 @@ class GAFeatureSelection:
         """Parent gene mating. Out of the best m+1 parents, a pairwise crossover is generated as the offspring,
         with m being the offspring size. """
         parent_genes = [tup[0] for tup in self.population]
-        crossover_point = int(len(parent_genes[0]) / 2)
+        crossover_point = len(parent_genes[0]) // 2
         offspring_chromosomes = []
         for i in range(self.offspring_size):
             parent1 = parent_genes[i]
@@ -1039,7 +1035,7 @@ class GAFeatureSelection:
         random_mutation_percentage = random.randint(1, 20)/100
         n_mutations = int(len(self.genes)*random_mutation_percentage)
         genes_copy = self.genes.copy()
-        for i in range(n_mutations):
+        for _ in range(n_mutations):
             random_gene_position = random.sample(range(self.population_size), 1)[0]
             random_gene = genes_copy[random_gene_position]
             random_chromosome_position = random.sample(range(self.n_features), 1)[0]
@@ -1058,7 +1054,7 @@ class GAFeatureSelection:
         """
         evolution = np.ndarray((generations, 4))
         for i in range(generations):
-            print('Generation: ' + str(i))
+            print(f'Generation: {str(i)}')
             # start with stats from random population
             self.feature_frequency_evolution[len(self.feature_frequency_evolution.keys())] = self.feature_frequencies
             evolution[i][0] = i
@@ -1119,10 +1115,7 @@ class GAFeatureSelection:
                              show=True):
         """Plots evolution history."""
         print('Plotting evolution statistics.')
-        if full_history:
-            df_stats = self.evolution_history
-        else:
-            df_stats = self.evolution
+        df_stats = self.evolution_history if full_history else self.evolution
         fig, ax = plt.subplots(figsize=(8, 8))
         ax.plot(df_stats.generation, df_stats.max_population_fitness, lw=3, ls='-', label=r'$\mathrm{R^{2}}$-cv max')
         ax.plot(df_stats.generation, df_stats.mean_population_fitness, lw=3, ls='--', label=r'$\mathrm{R^{2}}$-cv mean')

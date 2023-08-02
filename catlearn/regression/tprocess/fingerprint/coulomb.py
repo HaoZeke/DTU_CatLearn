@@ -48,13 +48,13 @@ class Coulomb(Fingerprint):
         for elei,elej in i_triu:
             gij=[0.0]*(n_atoms_g*3)
             if elei!=elej:
-                if elei in not_masked or elej in not_masked:                    
+                if elei in not_masked or elej in not_masked:        
                     gij_value=(cmatrix[elei,elej]/(distances[elei,elej]**2))*vec_distances[elei,elej]
-                    if elei in not_masked:
-                        i=not_masked.index(elei)
-                        gij[3*i:3*i+3]=gij_value
-                    if elej in not_masked:
-                        j=not_masked.index(elej)
-                        gij[3*j:3*j+3]=-gij_value
+                if elei in not_masked:
+                    i=not_masked.index(elei)
+                    gij[3*i:3*i+3]=gij_value
+                if elej in not_masked:
+                    j=not_masked.index(elej)
+                    gij[3*j:3*j+3]=-gij_value
             g.append(gij)
         return np.array(g)

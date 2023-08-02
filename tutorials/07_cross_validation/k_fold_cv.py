@@ -49,18 +49,15 @@ gadb = DataConnection('../../data/gadb.db')
 
 # Get all relaxed candidates from the db file.
 all_cand = gadb.get_all_relaxed_candidates(use_extinct=False)
-print('Loaded {} atoms objects'.format(len(all_cand)))
+print(f'Loaded {len(all_cand)} atoms objects')
 
 # Generate the feature matrix.
 fgen = FeatureGenerator()
 features = fgen.return_vec(all_cand, [fgen.eigenspectrum_vec])
-print('Generated {} feature matrix'.format(np.shape(features)))
+print(f'Generated {np.shape(features)} feature matrix')
 
-# Get the target values.
-targets = []
-for a in all_cand:
-    targets.append(a.info['key_value_pairs']['raw_score'])
-print('Generated {} target vector'.format(np.shape(targets)))
+targets = [a.info['key_value_pairs']['raw_score'] for a in all_cand]
+print(f'Generated {np.shape(targets)} target vector')
 
 
 # It is important to note that the `all_cand` variable is simply a list of atoms objects. There are no constraints on how this should be set up, the above example is just a succinct method for generating the list.
@@ -75,11 +72,11 @@ print('Generated {} target vector'.format(np.shape(targets)))
 
 fsplit, tsplit = k_fold(features=features, targets=targets, nsplit=5)
 
-print('k_fold has generated {} subsets of features.'.format(len(fsplit)))
+print(f'k_fold has generated {len(fsplit)} subsets of features.')
 for index in range(len(fsplit)):
     print('    subset {0} has shape {1}'.format(index, np.shape(fsplit[index])))
 
-print('\nk_fold has generated {} subsets of targets.'.format(len(tsplit)))
+print(f'\nk_fold has generated {len(tsplit)} subsets of targets.')
 for index in range(len(tsplit)):
     print('    subset {0} has shape {1}'.format(index, np.shape(tsplit[index])))
 
@@ -108,8 +105,6 @@ fread, tread = read_split(fname='kfoldSave', fformat='json')
 
 def gp_predict(train_features, train_targets, test_features, test_targets):
     """Function to perform the GP predictions."""
-    data = {}
-
     kdict = [
         {'type': 'gaussian', 'width': 1., 'scaling': 1., 'dimension': 'single'}
         ]
@@ -119,8 +114,9 @@ def gp_predict(train_features, train_targets, test_features, test_targets):
 
     pred = gp.predict(test_fp=test_features)
 
-    data['result'] = get_error(pred['prediction'],
-                               test_targets)['rmse_average']
+    data = {
+        'result': get_error(pred['prediction'], test_targets)['rmse_average']
+    }
     data['size'] = len(train_targets)
 
     return data
@@ -158,7 +154,7 @@ plt.plot(x, y, '-')
 plt.xlabel('Data Subset')
 plt.ylabel('Average Error')
 
-print('Averaged error: {}'.format(sum(y)/float(len(y))))
+print(f'Averaged error: {sum(y) / float(len(y))}')
 
 
 # We can then clean up the directory and remove saved files.

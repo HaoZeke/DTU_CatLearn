@@ -34,9 +34,8 @@ class SE(Kernel):
         """
         if 'length' in new_params:
             self.hp=dict(length=np.array(new_params['length'],dtype=float).reshape(-1))
-        else:
-            if 'length' not in self.hp:
-                self.hp['length']=np.array([-0.7])
+        elif 'length' not in self.hp:
+            self.hp['length']=np.array([-0.7])
         return self.hp
 
     def diag(self,features,get_derivatives=True):
@@ -73,7 +72,7 @@ class SE(Kernel):
         return 1
     
     def __repr__(self):
-        return 'SE(use_fingerprint={}, hp={})'.format(self.use_fingerprint,self.hp)
+        return f'SE(use_fingerprint={self.use_fingerprint}, hp={self.hp})'
     
 
 
@@ -87,8 +86,7 @@ class SE_Derivative(Kernel_Derivative):
                     Already calculated distance matrix.
         """
         D=self.distances.get_absolute_distances(dis_m)*np.exp(-2*self.hp['length'])
-        K=np.exp(-0.5*D)
-        return K
+        return np.exp(-0.5*D)
     
     def set_hyperparams(self,new_params):
         """Set or update the hyperparameters for the Kernel.
@@ -98,9 +96,8 @@ class SE_Derivative(Kernel_Derivative):
         """
         if 'length' in new_params:
             self.hp=dict(length=np.array(new_params['length'],dtype=float).reshape(-1))
-        else:
-            if 'length' not in self.hp:
-                self.hp['length']=np.array([-0.7])
+        elif 'length' not in self.hp:
+            self.hp['length']=np.array([-0.7])
         return self.hp
     
     def get_derivative_K(self,features,dis_m,K,d1,axis=0):
@@ -137,8 +134,7 @@ class SE_Derivative(Kernel_Derivative):
         """
         dis_d1=self.distances.get_derivative(features,dis_m,d1-1)
         dis_d2=self.distances.get_derivative(features2,dis_m,d2-1,axis=1)
-        Kdd1=K*(0.25*np.exp(-4*self.hp['length']))*dis_d1*dis_d2
-        return Kdd1
+        return K*(0.25*np.exp(-4*self.hp['length']))*dis_d1*dis_d2
     
     def get_hessian_K2(self,features,features2,dis_m,K,d1,d2):
         """Make the second part hessian of the kernel matrix wrt. to two dimension of the fingerprint.
@@ -179,9 +175,7 @@ class SE_Derivative(Kernel_Derivative):
         """
         Kdd1=self.get_hessian_K1(features,features2,dis_m,K,d1,d2)
         Kdd2=self.get_hessian_K2(features,features2,dis_m,K,d1,d2)
-        if Kdd2 is None:
-            return Kdd1
-        return Kdd1+Kdd2
+        return Kdd1 if Kdd2 is None else Kdd1+Kdd2
     
     def get_KXX(self,features,dis_m=None,**kwargs):
         """ Get the symmetric kernel matrix. 
@@ -277,7 +271,7 @@ class SE_Derivative(Kernel_Derivative):
         hp_deriv={}
         if 'length' in hp:
             nd1=len(features)
-            dim=int(len(KXX)/nd1)-1
+            dim = len(KXX) // nd1 - 1
             Kd=KXX.copy()
             if dis_m is None:
                 dis_m=self.distances(features)
@@ -302,6 +296,6 @@ class SE_Derivative(Kernel_Derivative):
         return 1
     
     def __repr__(self):
-        return 'SE_Derivative(use_fingerprint={}, hp={})'.format(self.use_fingerprint,self.hp)
+        return f'SE_Derivative(use_fingerprint={self.use_fingerprint}, hp={self.hp})'
     
 

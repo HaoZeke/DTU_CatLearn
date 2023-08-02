@@ -56,12 +56,12 @@ def get_train(atoms, key, size=None, taken=None):
     shuffle(orderlist)
     # return candidates not in test set.
     for a in orderlist:
-        if size is None or size is not None and len(dataset['atoms']) < size:
-            if taken is None or taken is not None and a[0] not in taken:
+        if size is None or len(dataset['atoms']) < size:
+            if taken is None or a[0] not in taken:
                 dataset['atoms'].append(a[1])
                 dataset['target'].append(a[1].info['key_value_pairs'][key])
                 dataset['order'].append(a[0])
-        elif size is not None and len(dataset['atoms']) == size:
+        elif len(dataset['atoms']) == size:
             break
 
     return dataset

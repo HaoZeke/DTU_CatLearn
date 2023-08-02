@@ -51,17 +51,10 @@ for row in atoms:
         alist.append(row.toatoms())
     except AttributeError:
         continue
-print('pulled {} molecules from db'.format(len(alist)))
+print(f'pulled {len(alist)} molecules from db')
 
 
-# In[3]:
-
-
-# Check the size of the atomic strucures.
-size = []
-for a in alist:
-    size.append(len(a))
-
+size = [len(a) for a in alist]
 print('min: {0}, mean: {1:.0f}, max: {2} atoms size'.format(
     min(size), sum(size)/len(size), max(size)))
 

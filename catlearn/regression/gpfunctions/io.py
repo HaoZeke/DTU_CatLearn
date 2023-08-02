@@ -19,7 +19,7 @@ def write(filename, model, ext='pkl'):
         Format to save GP, can be pkl or hdf5. Default is pkl.
     """
     if ext is 'pkl':
-        with open('{}.pkl'.format(filename), 'wb') as outfile:
+        with open(f'{filename}.pkl', 'wb') as outfile:
             pickle.dump(model, outfile, pickle.HIGHEST_PROTOCOL)
     elif ext is 'hdf5':
         train_features = model.train_fp
@@ -30,8 +30,7 @@ def write(filename, model, ext='pkl'):
             filename, train_features, train_targets, regularization,
             kernel_list)
     else:
-        raise NotImplementedError('{} file extension not implemented.'.format(
-            ext))
+        raise NotImplementedError(f'{ext} file extension not implemented.')
 
 
 def read(filename, ext='pkl'):
@@ -50,19 +49,20 @@ def read(filename, ext='pkl'):
         Python GaussianProcess object.
     """
     if ext is 'pkl':
-        with open('{}.pkl'.format(filename), 'rb') as infile:
+        with open(f'{filename}.pkl', 'rb') as infile:
             return pickle.load(infile)
     elif ext is 'hdf5':
         train_features, train_targets, regularization, kernel_list = \
          read_train_data(filename)
-        gp = GaussianProcess(
-            train_fp=train_features, train_target=train_targets,
-            kernel_list=kernel_list, regularization=regularization,
-            optimize_hyperparameters=False)
-        return gp
+        return GaussianProcess(
+            train_fp=train_features,
+            train_target=train_targets,
+            kernel_list=kernel_list,
+            regularization=regularization,
+            optimize_hyperparameters=False,
+        )
     else:
-        raise NotImplementedError('{} file extension not implemented.'.format(
-            ext))
+        raise NotImplementedError(f'{ext} file extension not implemented.')
 
 
 def write_train_data(filename, train_features, train_targets, regularization,
@@ -82,7 +82,7 @@ def write_train_data(filename, train_features, train_targets, regularization,
     kernel_list : dict
         The list containing dictionaries for the kernels.
     """
-    f = h5py.File('{}.hdf5'.format(filename), 'w')
+    f = h5py.File(f'{filename}.hdf5', 'w')
     f.create_dataset('train_features', data=train_features, compression='gzip',
                      compression_opts=9)
     f.create_dataset('train_targets', data=train_targets, compression='gzip',
@@ -110,7 +110,7 @@ def read_train_data(filename):
     kernel_list : list
         The dictionary containing parameters for the kernels.
     """
-    f = h5py.File('{}.hdf5'.format(filename), 'r')
+    f = h5py.File(f'{filename}.hdf5', 'r')
     train_features = np.asarray(f['train_features'])
     train_targets = np.asarray(f['train_targets'])
     regularization = float(np.asarray(f['regularization']))
@@ -132,7 +132,7 @@ def _kernel_list_to_group(h5file, path, klist):
         List of dictionaries to save in hdf5 format.
     """
     for i, kdict in enumerate(klist):
-        _dict_to_group(h5file, '/kernel_list/' + str(i) + '/', kdict)
+        _dict_to_group(h5file, f'/kernel_list/{str(i)}/', kdict)
 
 
 def _load_kernel_list_from_group(h5file):
@@ -153,13 +153,11 @@ def _load_kernel_list_from_group(h5file):
         List of dictionaries for all the kernels.
     """
     h5file.keys()
-    
-    kernel_list = []
-    for key, item in h5file['/kernel_list/'].items():
-        kernel_list.append(_load_dict_from_group(h5file,
-                                                 '/kernel_list/' + key + '/'))
 
-    return kernel_list
+    return [
+        _load_dict_from_group(h5file, f'/kernel_list/{key}/')
+        for key, item in h5file['/kernel_list/'].items()
+    ]
 
 def _dict_to_group(h5file, path, sdict):
     """Convert dictionary format to group format.
@@ -180,7 +178,7 @@ def _dict_to_group(h5file, path, sdict):
         elif isinstance(item, dict):
             _dict_to_group(h5file, path + key + '/', item)
         else:
-            raise ValueError('Cannot save %s type' % type(item))
+            raise ValueError(f'Cannot save {type(item)} type')
 
 
 def _load_dict_from_group(h5file, path):
@@ -200,8 +198,7 @@ def _load_dict_from_group(h5file, path):
     """
     rdict = {}
     for key, item in h5file[path].items():
-        if key != 'train_features' and key != 'train_targets' and \
-         key != 'regularization':
+        if key not in ['train_features', 'train_targets', 'regularization']:
             if isinstance(item, h5py._hl.dataset.Dataset):
                 rdict[key] = item.value
             elif isinstance(item, h5py._hl.group.Group):

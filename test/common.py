@@ -15,8 +15,9 @@ train_size, test_size = 45, 5
 def get_data():
     """Simple function to pull some training and test data."""
     # Attach the database.
-    dd = DescriptorDatabase(db_name='{}/vec_store.sqlite'.format(wkdir),
-                            table='FingerVector')
+    dd = DescriptorDatabase(
+        db_name=f'{wkdir}/vec_store.sqlite', table='FingerVector'
+    )
 
     # Pull the features and targets from the database.
     names = dd.get_column_names()

@@ -63,16 +63,15 @@ def log_marginal_likelihood(theta, train_matrix, targets, kernel_list,
     p = (datafit + complexity + normalization).sum(-1)
     if not eval_jac:
         return -p
-    else:
-        # Get jacobian of log marginal likelyhood wrt. hyperparameters.
-        C = cho_solve((L, True), np.eye(n),
-                      check_finite=True)
-        aa = a * a.T  # np.einsum("ik,jk->ijk", a, a)
-        Q = (aa - C)[:, :, np.newaxis]
-        # Get the list of gradients.
-        dK_dtheta = dK_dtheta_j(theta, train_matrix, kernel_list, Q)
-        jac = 0.5 * np.einsum("ijl,ijk->kl", Q, dK_dtheta)
-        return -p, -np.array(jac.sum(-1))
+    # Get jacobian of log marginal likelyhood wrt. hyperparameters.
+    C = cho_solve((L, True), np.eye(n),
+                  check_finite=True)
+    aa = a * a.T  # np.einsum("ik,jk->ijk", a, a)
+    Q = (aa - C)[:, :, np.newaxis]
+    # Get the list of gradients.
+    dK_dtheta = dK_dtheta_j(theta, train_matrix, kernel_list, Q)
+    jac = 0.5 * np.einsum("ijl,ijk->kl", Q, dK_dtheta)
+    return -p, -np.array(jac.sum(-1))
 
 
 def dK_dtheta_j(theta, train_matrix, kernel_list, Q):
@@ -141,9 +140,8 @@ def dK_dtheta_j(theta, train_matrix, kernel_list, Q):
             jac.append(dKdtheta)
             ki += N_W
         else:
-            raise NotImplementedError("jacobian for " + ktype)
+            raise NotImplementedError(f"jacobian for {ktype}")
     # Append gradient with respect to regularization.
     dKdnoise = np.eye(N)[:, :, np.newaxis]
     jac.append(dKdnoise)
-    jac = np.concatenate(jac, axis=2)
-    return jac
+    return np.concatenate(jac, axis=2)

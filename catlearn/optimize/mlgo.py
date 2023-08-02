@@ -194,16 +194,14 @@ class mlgo:
         " Generate a random slab-adsorbate structure from bounds "
         sol=dual_annealing(self.dual_func_random,self.bounds,maxfun=100,**self.opt_kwargs)
         self.x=sol['x'].copy()
-        slab_ads=self.place_ads(sol['x'])
-        return slab_ads
+        return self.place_ads(sol['x'])
 
     def dual_func_random(self,pos_angles):
         " Dual annealing object function for random structure "
         from ..regression.tprocess.baseline import Repulsion_calculator
         slab_ads=self.place_ads(pos_angles)
         slab_ads.calc=Repulsion_calculator(r_scale=0.7)
-        energy=slab_ads.get_potential_energy()
-        return energy
+        return slab_ads.get_potential_energy()
     
     def use_prev_calculations(self,prev_calculations):
         " Use previous calculations to restart ML calculator."
@@ -221,7 +219,6 @@ class mlgo:
             self.mlcalc.mlmodel.train_model(verbose=self.fullout)
         self.mlcalc=self.comm.bcast(self.mlcalc,root=0)
         self.comm.barrier()
-        pass
 
     def find_next_candidate(self,ml_chains,ml_steps,max_unc,relax,fmax,local_steps):
         " Find the next candidates by using simulated annealing and then chose the candidate from acquisition "
@@ -275,8 +272,7 @@ class mlgo:
                         if np.abs(self.energy_true-self.emin)<=unc_convergence:
                             self.message_system('Optimization is successfully completed')
                         converged=True
-        converged=self.comm.bcast(converged,root=0)
-        return converged
+        return self.comm.bcast(converged,root=0)
     
     def dual_annealing(self,maxiter=5000,**opt_kwargs):
         " Find the candidates structures, energy and forces using dual annealing "
@@ -340,7 +336,7 @@ class mlgo:
     def extra_initial_data(self,initial_points):
         " If only initial and final state is given then a third data point is calculated. "
         candidate=None
-        for i in range(initial_points):
+        for _ in range(initial_points):
             if self.get_training_len()<initial_points:
                 if self.rank==0:
                     candidate=self.add_random_ads()
@@ -363,8 +359,8 @@ class mlgo:
 
     def message_system(self,message,obj=None,end='\n',rank=0):
         " Print output on rank=0. "
-        if self.fullout is True:
-            if self.rank==rank:
+        if self.rank==rank:
+            if self.fullout is True:
                 if obj is None:
                     print(message,end=end)
                 else:
@@ -380,7 +376,7 @@ class mlgo:
             except:
                 self.print_list=['| Step |        Time         |      True energy      | Uncertainty |  True error  |   fmax   |']
 
-            msg='|{0:6d}| '.format(step)+'{} |'.format(now)
+            msg = '|{0:6d}| '.format(step) + f'{now} |'
             msg+='{0:23f}|'.format(self.energy_true)
             msg+='{0:13f}|'.format(self.unc)
             msg+='{0:14f}|'.format(np.abs(self.energy_true-self.energy))
@@ -388,7 +384,6 @@ class mlgo:
             self.print_list.append(msg)
             msg='\n'.join(self.print_list)
             self.message_system(msg)
-        pass
 
     def get_default_mlcalc(self,use_derivatives=True,use_fingerprint=True):
         " Get a default ML calculator if a calculator is not given. This is a recommended ML calculator."

@@ -112,7 +112,12 @@ class Factorized2DLogLikelihood(Object_functions):
         hp.update(dict(noise=np.array([noise]).reshape(-1)))
         prefactor,nlp=self.get_eig_ll_prefactor(noise,prefactors,hp,parameters_set,parameters,prior,UTY,D,n_data)
         hp.update(dict(noise=np.array([noise]).reshape(-1)))
-        sol['x']=np.array(sum([list(np.array(hp[para]).reshape(-1)) for para in parameters_set],[]))
+        sol['x'] = np.array(
+            sum(
+                (list(np.array(hp[para]).reshape(-1)) for para in parameters_set),
+                [],
+            )
+        )
         sol['hp']=hp.copy()
         sol['GP']=self.update(GP,hp)
         sol['nfev']+=1

@@ -176,64 +176,62 @@ class CatappFingerprintGenerator(BaseGenerator):
                     'concentration_catapp',
                     'facet_catapp',
                     'site_catapp']
+        # Atomic numbers in the site.
+        Z_surf1_raw = [atoms.numbers[j]
+                       for j in atoms.subsets['ligand_atoms']]
+        # Sort by concentration
+        counts = collections.Counter(Z_surf1_raw)
+        Z_surf1 = sorted(Z_surf1_raw, key=counts.get, reverse=True)
+        z1 = Z_surf1[0]
+        z2 = Z_surf1[0]
+        for z in Z_surf1:
+            if z != z1:
+                z2 = z
+        uu, ui = np.unique(Z_surf1, return_index=True)
+        if len(ui) == 1:
+            if Z_surf1[0] == z1:
+                site = 1.
+            elif Z_surf1[0] == z2:
+                site = 3.
         else:
-            # Atomic numbers in the site.
-            Z_surf1_raw = [atoms.numbers[j]
-                           for j in atoms.subsets['ligand_atoms']]
-            # Sort by concentration
-            counts = collections.Counter(Z_surf1_raw)
-            Z_surf1 = sorted(Z_surf1_raw, key=counts.get, reverse=True)
-            z1 = Z_surf1[0]
-            z2 = Z_surf1[0]
-            for z in Z_surf1:
-                if z != z1:
-                    z2 = z
-            uu, ui = np.unique(Z_surf1, return_index=True)
-            if len(ui) == 1:
-                if Z_surf1[0] == z1:
-                    site = 1.
-                elif Z_surf1[0] == z2:
-                    site = 3.
-            else:
-                site = 2.
-            # Import overlayer composition from ase database.
-            kvp = atoms.info['key_value_pairs']
-            term = [atomic_numbers[zt] for zt in string2symbols(kvp['term'])]
-            termuu, termui = np.unique(term, return_index=True)
-            if '3' in kvp['term']:
-                conc = 3.
-            elif len(termui) == 1:
-                conc = 1.
-            elif len(termui) == 2:
-                conc = 2.
-            else:
-                raise NotImplementedError("catappAB only supports AxBy.")
-            text_params = default_params + ['heat_of_formation',
-                                            # 'dft_bulk_modulus',
-                                            # 'dft_density',
-                                            # 'dbcenter',
-                                            # 'dbfilling',
-                                            # 'dbwidth',
-                                            # 'dbskew',
-                                            # 'dbkurt',
-                                            'block',
-                                            'econf',
-                                            'ionenergies']
-            f1 = get_mendeleev_params(z1, params=text_params)
-            f1 = f1[:-3] + block2number[f1[-3]] + \
+            site = 2.
+        # Import overlayer composition from ase database.
+        kvp = atoms.info['key_value_pairs']
+        term = [atomic_numbers[zt] for zt in string2symbols(kvp['term'])]
+        termuu, termui = np.unique(term, return_index=True)
+        if '3' in kvp['term']:
+            conc = 3.
+        elif len(termui) == 1:
+            conc = 1.
+        elif len(termui) == 2:
+            conc = 2.
+        else:
+            raise NotImplementedError("catappAB only supports AxBy.")
+        text_params = default_params + ['heat_of_formation',
+                                        # 'dft_bulk_modulus',
+                                        # 'dft_density',
+                                        # 'dbcenter',
+                                        # 'dbfilling',
+                                        # 'dbwidth',
+                                        # 'dbskew',
+                                        # 'dbkurt',
+                                        'block',
+                                        'econf',
+                                        'ionenergies']
+        f1 = get_mendeleev_params(z1, params=text_params)
+        f1 = f1[:-3] + block2number[f1[-3]] + \
                 list(n_outer(f1[-2])) + [f1[-1]['1']] + \
                 [float(gs_magmom[z1])]
-            if z1 == z2:
-                f2 = f1
-            else:
-                f2 = get_mendeleev_params(z2, params=text_params)
-                f2 = f2[:-3] + block2number[f2[-3]] + \
+        if z1 == z2:
+            f2 = f1
+        else:
+            f2 = get_mendeleev_params(z2, params=text_params)
+            f2 = f2[:-3] + block2number[f2[-3]] + \
                     list(n_outer(f2[-2])) + [f2[-1]['1']] + \
                     [float(gs_magmom[z2])]
-            msum = list(np.nansum([f1, f2], axis=0, dtype=np.float))
-            facet = facetdict[kvp['facet'].replace(')', '').replace('(', '')]
-            fp = f1 + f2 + msum + [conc] + facet + [site]
-            return fp
+        msum = list(np.nansum([f1, f2], axis=0, dtype=np.float))
+        facet = facetdict[kvp['facet'].replace(')', '').replace('(', '')]
+        return f1 + f2 + msum + [conc] + facet + [site]
 
     def name(self, atoms=None):
         """Return a name for a datapoint based on the contents of
@@ -251,7 +249,5 @@ class CatappFingerprintGenerator(BaseGenerator):
         """
         if atoms is None:
             return ['catapp_name']
-        else:
-            kvp = atoms.info['key_value_pairs']
-            name = kvp['species'] + '*' + kvp['name'] + kvp['facet']
-            return [name]
+        kvp = atoms.info['key_value_pairs']
+        return [kvp['species'] + '*' + kvp['name'] + kvp['facet']]

@@ -52,7 +52,7 @@ final_ase = read('final.traj')
 ase_calculator = copy.deepcopy(ase_calculator)
 
 images_ase = [initial_ase]
-for i in range(1, n_images-1):
+for _ in range(1, n_images-1):
     image = initial_ase.copy()
     image.set_calculator(copy.deepcopy(ase_calculator))
     images_ase.append(image)

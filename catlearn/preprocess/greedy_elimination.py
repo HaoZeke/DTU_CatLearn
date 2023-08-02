@@ -128,7 +128,7 @@ class GreedyElimination(object):
             for g in range(step):
                 eliminated = np.array([np.array(survivors)[s][g],
                                        np.array(scores)[s][g]]).tolist()
-                if len(meta) > 0:
+                if meta:
                     mean_meta = np.mean(meta, axis=0)
                     output.append(
                         np.concatenate([eliminated, float(mean_meta[g])],
@@ -187,8 +187,7 @@ class GreedyElimination(object):
                     total_features = data['total_features']
                     features = [np.array(f) for f in data['features']]
                     targets = [np.array(t) for t in data['targets']]
-                print('Resuming greedy search with {} features.'.format(
-                    total_features))
+                print(f'Resuming greedy search with {total_features} features.')
                 load_data = True
             except FileNotFoundError:
                 print('Starting new greedy search.')
@@ -351,9 +350,4 @@ def _single_elimination(args):
     # Calculate the error on predictions.
     result = predict(train, train_targets, test, test_targets)
 
-    if isinstance(result, list):
-        error = result[0]
-        meta = result[1:]
-        return f, error, meta
-
-    return f, result
+    return (f, result[0], result[1:]) if isinstance(result, list) else (f, result)

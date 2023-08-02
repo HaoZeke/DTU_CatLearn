@@ -9,21 +9,20 @@ class Object_functions:
         self.fun_name=fun.lower()
         self.log=log
         self.cost_args={'Qu':1,'Wp':1,'Wu':1,'combi':'sum'}
-        self.cost_args.update(cost_args)
+        self.cost_args |= cost_args
         self.fun_choice(self.fun_name,log)
 
     def fun_choice(self,fun,log):
         " Get the object function specified by fun "
         # What object function to use
         fun_f={'nmll':self.nmll,'nml':self.nml,'loo':self.loo,'gpe':self.gpe,'gpp':self.gpp,'nmlp':self.nmlp,\
-               'nmlp+nmll':self.nmlp,'mp':self.mp,'cost':self.cost,'mnll':self.mnll,'mnlp':self.mnlp}
+                   'nmlp+nmll':self.nmlp,'mp':self.mp,'cost':self.cost,'mnll':self.mnll,'mnlp':self.mnlp}
         fun_f=fun_f[fun.lower()]
         # A wrapper function is used if hyperparameters are in log space
         if log:
             self.func=fun_f
             fun_f=self.log_wrapper
         self.fun=fun_f
-        pass
 
     def nmll(self,theta,GP,parameters,X,Y,prior=None,jac=False,dis_m=None):
         "Negative mean log likelihood"
@@ -393,11 +392,11 @@ class Object_functions:
 
     def get_K_inv_deriv(self,K_deriv,KXX_inv,multiple_para):
         " Get the diagonal elements of the matrix product of the inverse and derivative covariance matrix "
-        if multiple_para:
-            K_deriv_cho=np.array([np.einsum('ij,ji->',KXX_inv,K_d) for K_d in K_deriv])
-        else:
-            K_deriv_cho=np.einsum('ij,ji->',KXX_inv,K_deriv)
-        return K_deriv_cho
+        return (
+            np.array([np.einsum('ij,ji->', KXX_inv, K_d) for K_d in K_deriv])
+            if multiple_para
+            else np.einsum('ij,ji->', KXX_inv, K_deriv)
+        )
 
     def get_r_s_derivatives(self,K_deriv,KXX_inv,coef,multiple_para):
         " Get the r and s vector that are products of the inverse and derivative covariance matrix "
@@ -418,7 +417,10 @@ class Object_functions:
             if 'correction' in parameters_set:
                 parameters_set.remove('correction')
             theta=[list(np.array(GP.hp[para]).reshape(-1)) for para in parameters_set]
-            parameters=sum([[para]*len(theta[p]) for p,para in enumerate(parameters_set)],[])
+            parameters = sum(
+                ([para] * len(theta[p]) for p, para in enumerate(parameters_set)),
+                [],
+            )
             theta=np.array(sum(theta,[]))
             return values[0],values[1]*theta
         return values

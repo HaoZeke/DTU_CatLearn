@@ -124,8 +124,8 @@ class RegressionFit(object):
 
     def _lasso(self):
         """Order features according to their corresponding coefficients."""
+        pred = None
         if self.line_search:
-            pred = None
             try:
                 alpha_list = np.geomspace(self.max_alpha, self.min_alpha,
                                           self.steps)
@@ -149,8 +149,6 @@ class RegressionFit(object):
             model = regr.fit(X=self.train_matrix, y=self.train_target)
             coeff = model.coef_
 
-            # Make the linear prediction.
-            pred = None
             if self.predict:
                 data = model.predict(self.test_matrix)
                 pred = get_error(prediction=data,

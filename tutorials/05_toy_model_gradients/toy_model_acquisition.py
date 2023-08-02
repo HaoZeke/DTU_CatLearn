@@ -148,9 +148,8 @@ for iteration in range(1, number_of_iterations+1):
         size_bar_gradients = (np.abs(np.max(linex) - np.min(linex))/2.0)/25.0
 
         def lineary(m, linearx, train, target):
-                """Define some linear function."""
-                lineary = m*(linearx-train)+target
-                return lineary
+            """Define some linear function."""
+            return m*(linearx-train)+target
 
         for i in range(0, np.shape(org_gradients)[0]):
             linearx_i = np.linspace(

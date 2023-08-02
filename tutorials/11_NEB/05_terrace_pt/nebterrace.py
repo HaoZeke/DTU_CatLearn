@@ -45,7 +45,7 @@ final_ase = read('final_opt.traj')
 constraint = FixAtoms(mask=[atom.tag > 1 for atom in initial_ase])
 
 images_ase = [initial_ase]
-for i in range(1, n_images-1):
+for _ in range(1, n_images-1):
     image = initial_ase.copy()
     image.set_calculator(copy.deepcopy(ase_calculator))
     images_ase.append(image)

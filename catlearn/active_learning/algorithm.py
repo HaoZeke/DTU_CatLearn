@@ -80,7 +80,7 @@ class ActiveLearning(object):
             all_target = np.array(self.target)
 
         output = []
-        for i in tqdm(np.arange(n_max // batch_size)):
+        for _ in tqdm(np.arange(n_max // batch_size)):
             # Setup data.
             test_index = np.delete(np.arange(len(all_train_data)),
                                    np.array(train_index))
@@ -191,7 +191,7 @@ class ActiveLearning(object):
 
 
 def _test_acquisition(args):
-        """Return an array of test results for a surrogate model.
+    """Return an array of test results for a surrogate model.
         Picklable implementation.
 
         Parameters
@@ -259,55 +259,55 @@ def _test_acquisition(args):
             sample : list
                 Indices in order of relevance from user defined function.
         """
-        initial_subset = args[0]
-        batch_size = args[1]
-        n_max = args[2]
-        seed = args[3]
-        train_data = args[4]
-        target = args[5]
-        surrogate_model = args[6]
+    initial_subset = args[0]
+    batch_size = args[1]
+    n_max = args[2]
+    seed = args[3]
+    train_data = args[4]
+    target = args[5]
+    surrogate_model = args[6]
 
-        if initial_subset is None:
-            train_index = list(range(max(batch_size, 2)))
-        else:
-            train_index = initial_subset
+    if initial_subset is None:
+        train_index = list(range(max(batch_size, 2)))
+    else:
+        train_index = initial_subset
 
-        if n_max is None:
-            n_max = len(target)
+    if n_max is None:
+        n_max = len(target)
 
-        if seed is not None:
-            random_state = np.random.RandomState(seed)
-            permute = random_state.permutation(len(target))
-            all_train_data = np.array(train_data)[permute, :]
-            all_target = np.array(target)[permute]
-        else:
-            all_train_data = np.array(train_data)
-            all_target = np.array(target)
+    if seed is not None:
+        random_state = np.random.RandomState(seed)
+        permute = random_state.permutation(len(target))
+        all_train_data = np.array(train_data)[permute, :]
+        all_target = np.array(target)[permute]
+    else:
+        all_train_data = np.array(train_data)
+        all_target = np.array(target)
 
-        output = []
-        for i in np.arange(n_max // batch_size):
-            # Setup data.
-            test_index = np.delete(np.arange(len(all_train_data)),
-                                   np.array(train_index))
-            train_fp = np.array(all_train_data)[train_index, :]
-            train_target = np.array(all_target)[train_index]
-            test_fp = np.array(all_train_data)[test_index, :]
-            test_target = np.array(all_target)[test_index]
+    output = []
+    for _ in np.arange(n_max // batch_size):
+        # Setup data.
+        test_index = np.delete(np.arange(len(all_train_data)),
+                               np.array(train_index))
+        train_fp = np.array(all_train_data)[train_index, :]
+        train_target = np.array(all_target)[train_index]
+        test_fp = np.array(all_train_data)[test_index, :]
+        test_target = np.array(all_target)[test_index]
 
-            if len(test_target) == 0:
-                break
-            elif len(test_target) < batch_size:
-                batch_size = len(test_target)
+        if len(test_target) == 0:
+            break
+        elif len(test_target) < batch_size:
+            batch_size = len(test_target)
 
-            # Call surrogate model.
-            sample, score = surrogate_model(train_fp, train_target,
-                                            test_fp, test_target)
+        # Call surrogate model.
+        sample, score = surrogate_model(train_fp, train_target,
+                                        test_fp, test_target)
 
-            to_acquire = test_index[sample[:batch_size]]
+        to_acquire = test_index[sample[:batch_size]]
 
-            # Append best candidates to be acquired.
-            train_index += list(to_acquire)
-            # Return meta data.
-            output.append(score)
+        # Append best candidates to be acquired.
+        train_index += list(to_acquire)
+        # Return meta data.
+        output.append(score)
 
-        return output
+    return output

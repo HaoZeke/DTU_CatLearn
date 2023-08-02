@@ -239,12 +239,12 @@ class GaussianProcess:
             if KXX is None:
                 KXX=self.kernel(X)
             hp_deriv['noise_deriv']=np.diag(np.array([0]*len(X)+[2*self.hp['noise_deriv']]*int(len(KXX)-len(X))).reshape(-1))
-        hp_deriv.update(self.kernel.get_derivatives(X,hp,KXX=KXX,dists=dists))
+        hp_deriv |= self.kernel.get_derivatives(X,hp,KXX=KXX,dists=dists)
         return hp_deriv
 
 
     def __repr__(self):
-        return "GP({} ; use_derivatives={})".format(self.hp,self.use_derivatives)
+        return f"GP({self.hp} ; use_derivatives={self.use_derivatives})"
 
             
         

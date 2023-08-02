@@ -94,15 +94,17 @@ class StandardFingerprintGenerator(BaseGenerator):
         if data is None:
             msg = 'Class must have atom_types set to return feature names.'
             assert hasattr(self, 'atom_types') and self.atom_types is not \
-                None, msg
-            return ['{}_count'.format(n) for n in self.atom_types]
+                    None, msg
+            return [f'{n}_count' for n in self.atom_types]
 
         ano = self.get_atomic_numbers(data)
 
         # WARNING: Will be set permanently whichever atom is first passed.
         if self.atom_types is None:
-            msg = 'atom_types variable will be set permanently to whichever '
-            msg += 'atom object is first passed'
+            msg = (
+                'atom_types variable will be set permanently to whichever '
+                + 'atom object is first passed'
+            )
             warnings.warn(msg)
             self.atom_types = sorted(frozenset(ano))
 
@@ -124,8 +126,10 @@ class StandardFingerprintGenerator(BaseGenerator):
         features : array
             An n + 1 array where n in the length of self.atom_types.
         """
-        msg = 'The variable element_parameters must be set in the feature '
-        msg += 'generator class.'
+        msg = (
+            'The variable element_parameters must be set in the feature '
+            + 'generator class.'
+        )
         assert self.element_parameters is not None, msg
 
         if not isinstance(self.element_parameters, list):
@@ -135,7 +139,7 @@ class StandardFingerprintGenerator(BaseGenerator):
         if data is None:
             msg = 'Class must have atom_types set to return feature names.'
             assert hasattr(self, 'atom_types') and self.atom_types is not \
-                None, msg
+                    None, msg
             names = []
             for p in self.element_parameters:
                 names += ['sum_{0}_{1}'.format(n, p) for n in self.atom_types]
@@ -162,7 +166,7 @@ class StandardFingerprintGenerator(BaseGenerator):
         return features
 
     def element_mass_vec(self, data):
-            """Function to return a vector based on mass parameter.
+        """Function to return a vector based on mass parameter.
 
             Parameters
             ----------
@@ -175,10 +179,7 @@ class StandardFingerprintGenerator(BaseGenerator):
                 Vector of the summed mass.
             """
             # Return feature names in no atomic data is passed.
-            if data is None:
-                return ['sum_mass']
-            # Return the summed mass of the atoms object.
-            return np.array([sum(self.get_masses(data))])
+        return ['sum_mass'] if data is None else np.array([sum(self.get_masses(data))])
 
     def _get_coulomb(self, data):
         """Generate the coulomb matrix.
@@ -231,8 +232,8 @@ class StandardFingerprintGenerator(BaseGenerator):
         if data is None:
             msg = 'Class must have atom_len set to return feature names.'
             assert hasattr(self, 'atom_len') and self.atom_len is not \
-                None, msg
-            return ['eig_{}'.format(n) for n in range(self.atom_len)]
+                    None, msg
+            return [f'eig_{n}' for n in range(self.atom_len)]
 
         features = np.zeros(self.atom_len)
         coulomb = self._get_coulomb(data)
@@ -261,7 +262,7 @@ class StandardFingerprintGenerator(BaseGenerator):
         if data is None:
             msg = 'Class must have atom_types set to return feature names.'
             assert hasattr(self, 'atom_types') and self.atom_types is not \
-                None, msg
+                    None, msg
             return ['{0}-{0}_dist'.format(n) for n in self.atom_types]
 
         features = []
@@ -270,8 +271,10 @@ class StandardFingerprintGenerator(BaseGenerator):
 
         # Get unique atom types.
         if self.atom_types is None:
-            msg = 'atom_types variable will be set permanently to whichever '
-            msg += 'atom object is first passed'
+            msg = (
+                'atom_types variable will be set permanently to whichever '
+                + 'atom object is first passed'
+            )
             warnings.warn(msg)
             self.atom_types = sorted(frozenset(an))
 
@@ -303,16 +306,15 @@ class StandardFingerprintGenerator(BaseGenerator):
         features : list
         """
         # range of element types.
-        labels = ['bag_' + chemical_symbols[z] for z in self.atom_types]
+        labels = [f'bag_{chemical_symbols[z]}' for z in self.atom_types]
         if atoms is None:
             return labels
-        else:
-            # empty bag atoms.
-            bag = np.zeros(len(labels))
-            for i, z in enumerate(self.atom_types):
-                bag[i] += list(atoms.numbers).count(z)
+        # empty bag atoms.
+        bag = np.zeros(len(labels))
+        for i, z in enumerate(self.atom_types):
+            bag[i] += list(atoms.numbers).count(z)
 
-            return list(bag)
+        return list(bag)
 
     def bag_edges(self, atoms):
         """Returns the bag of connections, defined as counting connections
@@ -327,15 +329,14 @@ class StandardFingerprintGenerator(BaseGenerator):
         ----------
         features : list
         """
-        # range of element types
-        n_elements = len(self.atom_types)
         if atoms is None:
             symbols = np.array([chemical_symbols[z] for z in self.atom_types])
             rows, cols = np.meshgrid(symbols, symbols)
             pairs = np.core.defchararray.add(rows, cols)
-            labels = ['bag_' + c for c in pairs[np.triu_indices_from(pairs)]]
-            return labels
+            return [f'bag_{c}' for c in pairs[np.triu_indices_from(pairs)]]
         else:
+            # range of element types
+            n_elements = len(self.atom_types)
             # empty bag of bond types.
             boc = np.zeros([n_elements, n_elements])
 
@@ -349,8 +350,9 @@ class StandardFingerprintGenerator(BaseGenerator):
                 z_row, z_col = np.unravel_index(b, [natoms, natoms])
                 bond_index = sorted((atoms.numbers[z_row],
                                      atoms.numbers[z_col]))
-                bond_type = tuple((self.atom_types.index(bond_index[0]),
-                                   self.atom_types.index(bond_index[1])))
+                bond_type = self.atom_types.index(
+                    bond_index[0]
+                ), self.atom_types.index(bond_index[1])
                 # Count bonds in upper triangle.
                 boc[bond_type] += 1
             return boc[np.triu_indices_from(boc)].tolist()
@@ -408,18 +410,17 @@ class StandardFingerprintGenerator(BaseGenerator):
         # range of element types
         atom_symbols = [chemical_symbols[z] for z in self.atom_types]
         nodes = []
-        for j, s in enumerate(atom_symbols):
+        for s in atom_symbols:
             nodes += [s + str(n) for n in
                       range(self.cn_min, self.cn_max+1)]
         if atoms is None:
             rows, cols = np.meshgrid(nodes, nodes)
             pairs = np.core.defchararray.add(rows, cols)
-            labels = ['bag_' + c for c in pairs[np.triu_indices_from(pairs)]]
-            return labels
+            return [f'bag_{c}' for c in pairs[np.triu_indices_from(pairs)]]
         else:
             # empty bag of bond types.
             n_elements_cn = len(self.atom_types) * \
-                (self.cn_max - self.cn_min + 1)
+                    (self.cn_max - self.cn_min + 1)
             boc = np.zeros([n_elements_cn, n_elements_cn], dtype=int)
 
             natoms = len(atoms)
@@ -435,13 +436,12 @@ class StandardFingerprintGenerator(BaseGenerator):
                 cn = (cn_list[i_row], cn_list[i_col])
                 bond_index = np.lexsort((cn, z))
                 node_a = chemical_symbols[np.array(z)[bond_index[0]]] + \
-                    str(np.array(cn)[bond_index[0]])
+                        str(np.array(cn)[bond_index[0]])
                 node_b = chemical_symbols[np.array(z)[bond_index[1]]] + \
-                    str(np.array(cn)[bond_index[1]])
+                        str(np.array(cn)[bond_index[1]])
 
                 # Get bond types.
-                bond_type = tuple((nodes.index(node_a),
-                                   nodes.index(node_b)))
+                bond_type = nodes.index(node_a), nodes.index(node_b)
                 # Count bonds in upper triangle.
                 boc[bond_type] += 1
             return boc[np.triu_indices_from(boc)].tolist()

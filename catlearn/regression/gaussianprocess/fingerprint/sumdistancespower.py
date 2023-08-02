@@ -107,6 +107,5 @@ class Sum_distances_power(Fingerprint):
         comb=[]
         n=len(a)
         for i in range(n):
-            for j in range(i,n):
-                comb.append((a[i],a[j]))
+            comb.extend((a[i], a[j]) for j in range(i,n))
         return comb

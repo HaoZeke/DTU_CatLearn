@@ -131,7 +131,7 @@ class Database:
     
     def __repr__(self):
         if self.use_derivatives:
-            return "Database({} Atoms objects without forces)".format(len(self.atoms_list))
-        return "Database({} Atoms objects with forces)".format(len(self.atoms_list))
+            return f"Database({len(self.atoms_list)} Atoms objects without forces)"
+        return f"Database({len(self.atoms_list)} Atoms objects with forces)"
     
     

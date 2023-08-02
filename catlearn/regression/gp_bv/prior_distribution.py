@@ -11,9 +11,8 @@ def make_prior(GP,parameters,X,Y,prior_dis=None,scale=1,fun_name='nmll'):
         prior_dis={para:Uniform_prior() for para in parameters_set}
     for para in parameters_set:
         para_count=parameters.count(para)
-        if 'length'==para and 'Multi' in str(GP.kernel):
-            if para_count<len(X[0]):
-                para_count=len(X[0])
+        if para == 'length' and 'Multi' in str(GP.kernel):
+            para_count = max(para_count, len(X[0]))
         bounds=Boundary_conditions(bound_type='educated',scale=scale[para])
         bounds=bounds.create(GP,X,Y,[para]*para_count,log=False,fun_name=fun_name)
         prior_lp[para]=np.array([copy.deepcopy(prior_dis[para]).min_max(b[0],b[1]) for b in bounds])
@@ -24,11 +23,10 @@ class Prior_distribution:
         pdf_grid=self.pdf(x_grid)
         min_where=np.where(pdf_grid==np.min(pdf_grid))
         max_where=np.where(pdf_grid==np.max(pdf_grid))
-        str1='Min=({},{}) ; Max=({},{})'.format(self.round_num(x_grid[min_where]),\
-            self.round_num(pdf_grid[min_where]),self.round_num(x_grid[max_where]),self.round_num(pdf_grid[max_where]))
+        str1 = f'Min=({self.round_num(x_grid[min_where])},{self.round_num(pdf_grid[min_where])}) ; Max=({self.round_num(x_grid[max_where])},{self.round_num(pdf_grid[max_where])})'
         mean_c=np.trapz(pdf_grid*x_grid,x=x_grid)
         var_c=np.trapz(pdf_grid*x_grid**2,x=x_grid)-mean_c**2
-        str2='E[X]={} ; Var[X]={}'.format(self.round_num(mean_c),self.round_num(var_c))
+        str2 = f'E[X]={self.round_num(mean_c)} ; Var[X]={self.round_num(var_c)}'
         return str1,str2
 
     def round_num(self,val,r=2):
@@ -49,11 +47,10 @@ class Uniform_prior(Prior_distribution):
         'Probability density function'
         if isinstance(x,(float,int)):
             return self.prob if self.start<=x<=self.end else 0
-        else:
-            index=(self.start<=x)&(x<=self.end)
-            value=np.zeros(len(x))
-            value[index]=self.prob
-            return value
+        index=(self.start<=x)&(x<=self.end)
+        value=np.zeros(len(x))
+        value[index]=self.prob
+        return value
     
     def deriv(self,x):
         'The derivative of the probability density function as respect to x'
@@ -93,7 +90,7 @@ class Uniform_prior(Prior_distribution):
         return self
     
     def __repr__(self):
-        return 'Uniform({},{})'.format(self.round_num(self.start),self.round_num(self.end))
+        return f'Uniform({self.round_num(self.start)},{self.round_num(self.end)})'
 
 
 class Normal_prior(Prior_distribution):
@@ -141,7 +138,7 @@ class Normal_prior(Prior_distribution):
         return self
     
     def __repr__(self):
-        return 'N({},{})'.format(self.round_num(self.mu),self.round_num(self.std))
+        return f'N({self.round_num(self.mu)},{self.round_num(self.std)})'
 
 
 class Lognormal_prior(Prior_distribution):
@@ -187,7 +184,7 @@ class Lognormal_prior(Prior_distribution):
         return self
     
     def __repr__(self):
-        return 'Log-Normal({},{})'.format(self.round_num(self.mu),self.round_num(self.std))
+        return f'Log-Normal({self.round_num(self.mu)},{self.round_num(self.std)})'
 
 
 class Gamma_prior(Prior_distribution):
@@ -217,7 +214,7 @@ class Gamma_prior(Prior_distribution):
         return self
     
     def __repr__(self):
-        return 'Gamma({},{})'.format(self.round_num(self.a),self.round_num(self.b))
+        return f'Gamma({self.round_num(self.a)},{self.round_num(self.b)})'
 
 
 class Invgamma_prior(Prior_distribution):
@@ -264,7 +261,7 @@ class Invgamma_prior(Prior_distribution):
         return self
     
     def __repr__(self):
-        return 'Inv-Gamma({},{})'.format(self.round_num(self.a),self.round_num(self.b))
+        return f'Inv-Gamma({self.round_num(self.a)},{self.round_num(self.b)})'
 
 
 class Laplace_prior(Prior_distribution):
@@ -292,7 +289,7 @@ class Laplace_prior(Prior_distribution):
         return self
     
     def __repr__(self):
-        return 'Laplace({},{})'.format(self.round_num(self.mu),self.round_num(self.b))
+        return f'Laplace({self.round_num(self.mu)},{self.round_num(self.b)})'
 
 
 class Logistic_prior(Prior_distribution):
@@ -320,7 +317,7 @@ class Logistic_prior(Prior_distribution):
         return self
     
     def __repr__(self):
-        return 'Logistic({},{})'.format(self.round_num(self.mu),self.round_num(self.s))
+        return f'Logistic({self.round_num(self.mu)},{self.round_num(self.s)})'
 
 
 class Gen_normal_prior(Prior_distribution):
@@ -355,7 +352,7 @@ class Gen_normal_prior(Prior_distribution):
         return self
     
     def __repr__(self):
-        return 'Generalized-normal({},{},{})'.format(self.round_num(self.mu),self.round_num(self.s),self.v)
+        return f'Generalized-normal({self.round_num(self.mu)},{self.round_num(self.s)},{self.v})'
 
 
 class Gen_lognormal_prior(Prior_distribution):
@@ -404,7 +401,7 @@ class Gen_lognormal_prior(Prior_distribution):
         return self
     
     def __repr__(self):
-        return 'Generalized-lognormal({},{},{})'.format(self.round_num(self.mu),self.round_num(self.s),self.v)
+        return f'Generalized-lognormal({self.round_num(self.mu)},{self.round_num(self.s)},{self.v})'
 
 class Inverse_prior(Prior_distribution):
     def __init__(self):

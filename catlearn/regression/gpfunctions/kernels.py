@@ -147,14 +147,14 @@ def noise_multi_kernel(theta, log_scale, m1, m2=None, eval_gradients=False):
             k = np.zeros((N + N * D, N + N * D))
             k[0:N, 0:N] = np.identity(N) * c_1
             k[N:, N:] = np.identity(N * D) * c_2
-        return k
     else:
         size_m2 = np.shape(m2)
         T = size_m2[0]
         k = np.zeros([N, T])
         if eval_gradients is True:
             k = np.zeros([N, T + T * D])
-        return k
+
+    return k
 
 
 def gaussian_kernel(theta, log_scale, m1, m2=None, eval_gradients=False):
@@ -226,7 +226,7 @@ def gaussian_xx_gradients(m1, kwidth, k):
             k_dd = ((I_m - (ldist[:, None, :] * ldist[:, :, None])) *
                     (k[i, None, None].T)).reshape(-1, size[1])
             big_kdd[:, size[1] * i:size[1] + size[1] * i] = k_dd
-        elif size[1] > 30:  # Loop when large number of features.
+        else:
             for j in range(i, size[0]):
                 k_dd = (I_m - np.outer(ldist[j], ldist[j].T)) * k[i, j]
                 big_kdd[i * size[1]:(i + 1) * size[1],
@@ -315,8 +315,7 @@ def sqe_kernel(theta, log_scale, m1, m2=None, eval_gradients=False):
         The covariance matrix.
     """
     if eval_gradients:
-        msg = 'Evaluation of the gradients for this kernel is not yet '
-        msg += 'implemented'
+        msg = 'Evaluation of the gradients for this kernel is not yet ' + 'implemented'
         raise NotImplementedError(msg)
 
     kwidth = theta
@@ -354,8 +353,7 @@ def scaled_sqe_kernel(theta, log_scale, m1, m2=None, eval_gradients=False):
         The covariance matrix.
     """
     if eval_gradients:
-        msg = 'Evaluation of the gradients for this kernel is not yet '
-        msg += 'implemented'
+        msg = 'Evaluation of the gradients for this kernel is not yet ' + 'implemented'
         raise NotImplementedError(msg)
 
     N_D = len(theta) / 2
@@ -366,10 +364,9 @@ def scaled_sqe_kernel(theta, log_scale, m1, m2=None, eval_gradients=False):
 
     if m2 is None:
         m2 = m1
-    k = distance.cdist(
-        m1, m2, lambda u, v: scale * np.exp(np.sqrt((u - v)**2 / kwidth)))
-
-    return k
+    return distance.cdist(
+        m1, m2, lambda u, v: scale * np.exp(np.sqrt((u - v) ** 2 / kwidth))
+    )
 
 
 def AA_kernel(theta, log_scale, m1, m2=None, eval_gradients=False):
@@ -392,8 +389,7 @@ def AA_kernel(theta, log_scale, m1, m2=None, eval_gradients=False):
         The covariance matrix.
     """
     if eval_gradients:
-        msg = 'Evaluation of the gradients for this kernel is not yet '
-        msg += 'implemented'
+        msg = 'Evaluation of the gradients for this kernel is not yet ' + 'implemented'
         raise NotImplementedError(msg)
 
     ll = theta[0]
@@ -405,11 +401,13 @@ def AA_kernel(theta, log_scale, m1, m2=None, eval_gradients=False):
     q = (1 - ll) / (c - ll)
     if m2 is None:
         m2 = m1
-    k = distance.cdist(
-        m1, m2, lambda u, v: (ll ** (n - np.sqrt(((u - v) ** 2))) *
-                              (q ** np.sqrt((u - v) ** 2))).sum())
-
-    return k
+    return distance.cdist(
+        m1,
+        m2,
+        lambda u, v: (
+            ll ** (n - np.sqrt(((u - v) ** 2))) * (q ** np.sqrt((u - v) ** 2))
+        ).sum(),
+    )
 
 
 def linear_kernel(theta, log_scale, m1, m2=None, eval_gradients=False):
@@ -468,8 +466,7 @@ def quadratic_kernel(theta, log_scale, m1, m2=None, eval_gradients=False):
         The covariance matrix.
     """
     if eval_gradients:
-        msg = 'Evaluation of the gradients for this kernel is not yet '
-        msg += 'implemented'
+        msg = 'Evaluation of the gradients for this kernel is not yet ' + 'implemented'
         raise NotImplementedError(msg)
 
     slope = np.array(theta[0])
@@ -518,8 +515,7 @@ def laplacian_kernel(theta, log_scale, m1, m2=None, eval_gradients=False):
         The covariance matrix.
     """
     if eval_gradients:
-        msg = 'Evaluation of the gradients for this kernel is not yet '
-        msg += 'implemented'
+        msg = 'Evaluation of the gradients for this kernel is not yet ' + 'implemented'
         raise NotImplementedError(msg)
 
     theta = np.array(theta)

@@ -131,7 +131,7 @@ class placeholder(object):
             self.index_split, self.indicies)
 
         test_targets, test_features, _, _ =\
-            self.hv.get_subset_data(self.index_split, self.indicies, split)
+                self.hv.get_subset_data(self.index_split, self.indicies, split)
         # Get some statitics from data.
         (self.s_tar, self.m_tar, self.s_feat, self.m_feat,
          train_targets, train_features,
@@ -141,15 +141,13 @@ class placeholder(object):
                                                self.m_tar, self.s_feat,
                                                self.m_feat)
 
-        if self.featselect_featconst or self.featselect_featvar:
-            # Search for the subset of features.
-            if self.selected_features is None:
-                if self.glob_feat1 is None and self.glob_tar1 is None:
-                    #  Search with minimum data.
-                    FS = feature_selection(train_features, train_targets)
-                else:
-                    # Search with maximum data.
-                    FS = feature_selection(self.glob_feat1, self.glob_tar1)
+        if self.selected_features is None:
+            if self.featselect_featconst or self.featselect_featvar:
+                FS = (
+                    feature_selection(train_features, train_targets)
+                    if self.glob_feat1 is None and self.glob_tar1 is None
+                    else feature_selection(self.glob_feat1, self.glob_tar1)
+                )
                 self.selected_features = FS.selection(self.select_limit)
                 if not bool(self.selected_features):
                     return (set_size, p_error, result)
@@ -160,7 +158,6 @@ class placeholder(object):
                 test_features, test_targets, ridge,
                 set_size, p_error,
                 result)
-            return (set_size, p_error, result)
         else:
             if self.featselect_featconst:
                 #  Get the data for the chosen features set.
@@ -171,11 +168,12 @@ class placeholder(object):
                     test_features,
                     self.selected_features[str(self.feat_sub)][0], axis=1)
             set_size, p_error, result \
-                = self.reg_data_var(
+                    = self.reg_data_var(
                     train_features, train_targets,
                     test_features, test_targets, ridge,
                     set_size, p_error, result)
-            return (set_size, p_error, result)
+
+        return (set_size, p_error, result)
 
     def reg_feat_var(self, train_features, train_targets, test_features,
                      test_targets, ridge, set_size, p_error,
@@ -255,10 +253,7 @@ class placeholder(object):
             reg_data = ridge.regularization(
                 train_targets, train_features, coef=None,
                 featselect_featvar=self.featselect_featvar)
-        if self.new_training:
-            coef = reg_data['result'][0]
-        else:
-            coef = result[0][4]
+        coef = reg_data['result'][0] if self.new_training else result[0][4]
         data = self.PC.prediction_error(test_features, test_targets,
                                         coef, self.s_tar, self.m_tar)
         if self.new_training:

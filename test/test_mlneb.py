@@ -41,12 +41,12 @@ class TestMLNEB(unittest.TestCase):
         np.random.seed(1)
         n_images = 8
         images = [initial_structure]
-        for i in range(1, n_images-1):
+        for _ in range(1, n_images-1):
             image = initial_structure.copy()
             image.calc=copy.deepcopy(ase_calculator)
             images.append(image)
         images.append(final_structure)
-        
+
         neb = NEB(images, climb=True)
         neb.interpolate(method='linear')
         neb_catlearn = MLNEB(start=initial_structure,
@@ -54,9 +54,9 @@ class TestMLNEB(unittest.TestCase):
                              interpolation=images,
                              ase_calc=MullerBrown, ase_calc_kwargs={},
                              restart=False)
-        
+
         neb_catlearn.run(fmax=0.05, max_step=0.2)
-        
+
         atoms_catlearn = read('evaluated_structures.traj', ':')
         n_eval_catlearn = len(atoms_catlearn) - 2
         self.assertEqual(n_eval_catlearn, 12)
@@ -65,7 +65,7 @@ class TestMLNEB(unittest.TestCase):
         np.testing.assert_array_equal(n_eval_catlearn, 12)
         max_unc = np.max(neb_catlearn.uncertainty_path)
         unc_test = 0.03245814099892351
-        
+
         print('Checking uncertainty on the path (8 images):')
         np.testing.assert_array_almost_equal(max_unc, unc_test, decimal=4)
         

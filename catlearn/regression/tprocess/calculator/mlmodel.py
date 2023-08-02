@@ -8,7 +8,7 @@ class MLModel:
         self.baseline=deepcopy(baseline)
         self.optimize=optimize
         self.optimize_kwargs=optimize_kwargs.copy()
-        self.use_baseline=False if self.baseline is None else True
+        self.use_baseline = self.baseline is not None
 
     def add_training(self,atoms_list):
         " Add training ase Atoms data to the database. "
@@ -40,10 +40,7 @@ class MLModel:
     def baseline_correction(self,targets,atoms=None,add=False,use_derivatives=True,negative_forces=True):
         " Baseline correction if a baseline is used. Either add the correction to an atom object or subtract it from training data. "
         # Whether the baseline is used to training or prediction
-        if not add:
-            atoms_list=self.database.get_atoms()
-        else:
-            atoms_list=[atoms]
+        atoms_list = self.database.get_atoms() if not add else [atoms]
         # Calculate the baseline for each ASE atoms object
         y_base=[]
         for atoms in atoms_list:
@@ -51,9 +48,7 @@ class MLModel:
             atoms_base.calc=self.baseline
             y_base.append(self.database.get_target(atoms_base,use_derivatives=use_derivatives,negative_forces=negative_forces))
         # Either add or subtract it from targets
-        if add:
-            return targets+np.array(y_base)[0]
-        return targets-np.array(y_base)
+        return targets+np.array(y_base)[0] if add else targets-np.array(y_base)
 
     def calculate(self,atoms,get_variance=True,get_forces=True):
         """ Calculate the energy and also the uncertainties and forces if selected.
@@ -155,8 +150,12 @@ class MLModel:
         kwargs_optimize=dict(local_run=run_golden,maxiter=5000,jac=False,bounds=None,ngrid=80,use_bounds=True,local_kwargs=local_kwargs)
         hpfitter=HyperparameterFitter(FactorizedLogLikelihood(),optimization_method=line_search_scale,opt_kwargs=kwargs_optimize,distance_matrix=True)
         kernel=SE_Derivative(use_fingerprint=use_fingerprint) if use_derivatives else SE(use_fingerprint=use_fingerprint)
-        model=TProcess(prior=Prior_median(),kernel=kernel,use_derivatives=use_derivatives,hpfitter=hpfitter)
-        return model
+        return TProcess(
+            prior=Prior_median(),
+            kernel=kernel,
+            use_derivatives=use_derivatives,
+            hpfitter=hpfitter,
+        )
 
     def get_default_database(self,use_derivatives=True,use_fingerprint=False):
         " Get a default database used to keep track of the training systems. "

@@ -28,13 +28,7 @@ class TestCurve(unittest.TestCase):
         # i is the size of featureset.
         i = 10
         lim = i + 2
-        if featselect_featvar:
-            # Under which interval of feature set in inspection.
-            # (Varying of feature size)
-            select_limit = [0, 20]
-        else:
-            # For which fetureset inspection is made. (Varying of data size)
-            select_limit = [i - 1, i + 1]
+        select_limit = [0, 20] if featselect_featvar else [i - 1, i + 1]
         while i < lim:
             set_size, p_error, result, PC = hierarchy(
                 hv, 243, 5, 45, new_data=True, ridge=True, scale=True,
@@ -43,7 +37,7 @@ class TestCurve(unittest.TestCase):
                 featselect_featconst=featselect_featconst,
                 select_limit=select_limit,
                 feat_sub=i)
-            if not (set_size and p_error) == [] and not featselect_featvar:
+            if (set_size and p_error) != [] and not featselect_featvar:
                 for data in result:
                     print('data size:', data[0], 'prediction error:',
                           data[1], 'Omega:', data[5],
@@ -51,7 +45,7 @@ class TestCurve(unittest.TestCase):
                           'Pearson correlation:', data[3])
                 i += 1
             elif (set_size and p_error) == [] and not featselect_featvar:
-                print("No subset {}".format(i))
+                print(f"No subset {i}")
                 i += 1
                 lim += 1
             if featselect_featvar:
@@ -68,7 +62,7 @@ class TestCurve(unittest.TestCase):
             data1 = np.empty(1,)
             data2 = np.empty(1,)
             hit1, hit2 = 0, 0
-            for k in range(1, 4):
+            for _ in range(1, 4):
                 selected_features1 = feature_frequency(
                     hv, 243, 3, 8, new_data=True, ridge=True, scale=True,
                     globalscale=True, normalization=True,
@@ -129,8 +123,9 @@ class TestCurve(unittest.TestCase):
         """Simple function to pull some training and test data."""
         # Attach the database.
         wkdir = os.getcwd()
-        dd = DescriptorDatabase(db_name='{}/vec_store.sqlite'.format(wkdir),
-                                table='FingerVector')
+        dd = DescriptorDatabase(
+            db_name=f'{wkdir}/vec_store.sqlite', table='FingerVector'
+        )
 
         # Pull the features and targets from the database.
         names = dd.get_column_names()
@@ -166,12 +161,12 @@ class TestCurve(unittest.TestCase):
                             get_validation_error=True,
                             get_training_error=True,
                             uncertainty=True)
-        r = [np.shape(train_features)[0],
-             output['validation_error']['rmse_average'],
-             output['validation_error']['absolute_average'],
-             np.mean(output['uncertainty'])
-             ]
-        return r
+        return [
+            np.shape(train_features)[0],
+            output['validation_error']['rmse_average'],
+            output['validation_error']['absolute_average'],
+            np.mean(output['uncertainty']),
+        ]
 
     def test_simple_learn(self):
         [train_features, train_targets,

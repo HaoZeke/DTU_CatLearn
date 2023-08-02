@@ -144,27 +144,27 @@ class data_process(object):
         m_tar : array
             Mean for the dependent train_targets.
         """
-        data = {}
         sumd = 0.
         p_corr = []
 
-        if self.scale:
-            for tf, tt, in zip(test_features, test_targets):
+        for tf, tt in zip(test_features, test_targets):
+            if self.scale:
                 sumd += (np.dot(coef, tf) * s_tar + m_tar - tt)**2
-                p_corr.append(np.dot(coef, tf))
-        else:
-            for tf, tt, in zip(test_features, test_targets):
+            else:
                 sumd += (np.dot(coef, tf) - tt) ** 2
-                p_corr.append(np.dot(coef, tf))
-
+            p_corr.append(np.dot(coef, tf))
         error = (sumd / len(test_features)) ** 0.5
 
         ecludian_length = np.sqrt(np.dot(coef, coef))
 
-        data['result'] = (len(test_features), error, ecludian_length,
-                          pearsonr(p_corr, test_targets)[0])
-
-        return data
+        return {
+            'result': (
+                len(test_features),
+                error,
+                ecludian_length,
+                pearsonr(p_corr, test_targets)[0],
+            )
+        }
 
     def get_statistic(self, data_size, p_error):
         """Generate statistics for predicition.
@@ -209,10 +209,7 @@ class data_process(object):
         for listx, listy in zip(X, Y):
             X_mean.append(sum(listx) / len(listx))
             Y_mean.append(sum(listy) / len(listy))
-            summa = 0
-            for y in listy:
-                summa += (y - Y_mean[-1])**2
-
+            summa = sum((y - Y_mean[-1])**2 for y in listy)
             corrected_std.append((summa / (len(listy) - 1))**0.5)
 
         return Y_mean, X_mean, corrected_std

@@ -33,11 +33,10 @@ def ase_neighborlist(atoms, cutoffs=None):
 
     nl.update(atoms)
 
-    neighborlist = {}
-    for i, _ in enumerate(atoms):
-        neighborlist[i] = sorted(list(map(int, nl.get_neighbors(i)[0])))
-
-    return neighborlist
+    return {
+        i: sorted(list(map(int, nl.get_neighbors(i)[0])))
+        for i, _ in enumerate(atoms)
+    }
 
 
 def catlearn_neighborlist(atoms, dx=None, max_neighbor=1, mic=True):
@@ -95,7 +94,7 @@ def catlearn_neighborlist(atoms, dx=None, max_neighbor=1, mic=True):
                 dist, radius_matrix, buffer_matrix, n, connection_matrix)
             n += 1
     else:
-        msg = 'max_neighbor parameter {} not recognized.'.format(max_neighbor)
+        msg = f'max_neighbor parameter {max_neighbor} not recognized.'
         raise NotImplementedError(msg)
 
     np.fill_diagonal(connection_matrix, 0.)

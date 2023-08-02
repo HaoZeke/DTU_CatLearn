@@ -71,8 +71,7 @@ def get_error(prediction, target, metrics=None, epsilon=None,
 
     if 'insensitive' in metrics:
         # Epsilon-insensitive error function.
-        msg = 'epsilon insensitivity must be defined, currently: {}'.format(
-            epsilon)
+        msg = f'epsilon insensitivity must be defined, currently: {epsilon}'
         assert isinstance(epsilon, float)
         e_epsilon = np.abs(res) - epsilon
         np.place(e_epsilon, e_epsilon < 0, 0)
@@ -93,15 +92,10 @@ def _get_percentiles(residuals):
     residuals : list
         List of calculated errors.
     """
-    data = {}
-
     # Some hard coded percentiles to return.
     percentiles = [99, 95, 75, 25, 5, 1]
 
-    for p in percentiles:
-        data['{0}'.format(p)] = np.percentile(residuals, p)
-
-    return data
+    return {'{0}'.format(p): np.percentile(residuals, p) for p in percentiles}
 
 
 def _cost_function(theta, train_matrix, targets, kernel_list,
@@ -137,7 +131,4 @@ def _cost_function(theta, train_matrix, targets, kernel_list,
     # Form list of the actual predictions.
     alpha = functools.reduce(np.dot, (cinv, targets))
     prediction = functools.reduce(np.dot, (cvm, alpha))
-    # Calculated the error for the prediction on the training data.
-    train_err = get_error(prediction=prediction,
-                          target=targets)[lf + '_average']
-    return train_err
+    return get_error(prediction=prediction, target=targets)[f'{lf}_average']

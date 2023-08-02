@@ -89,8 +89,7 @@ class GeneticAlgorithm(object):
         if self.fitness_parameters > 1:
             self.pareto = True
         if self.pareto and self.accuracy is not None:
-            msg = 'Should not set an accuracy parameter for multivariable '
-            msg += 'searches.'
+            msg = 'Should not set an accuracy parameter for multivariable ' + 'searches.'
             raise RuntimeError(msg)
 
         # Make some k-fold splits.
@@ -162,7 +161,7 @@ class GeneticAlgorithm(object):
                 _write_data(writefile, self.population, self.fitness)
 
             if convergence_operator(self.fitness, repeat=repeat):
-                print('CONVERGED on step {}'.format(self.step + 1))
+                print(f'CONVERGED on step {self.step + 1}')
                 break
 
     def _new_generation(self):
@@ -174,7 +173,7 @@ class GeneticAlgorithm(object):
             A list of parameters for the new generation.
         """
         offspring_list = []
-        for c in range(self.population_size):
+        for _ in range(self.population_size):
             # Select an initial candidate.
             p1 = None
             while p1 is None:
@@ -237,12 +236,14 @@ class GeneticAlgorithm(object):
             param_list_shuf.append(param_list[ind])
             fit_list_shuf.append(fit_list[ind])
 
-        # Get random probability.
-        for parameter, fitness in zip(param_list_shuf, fit_list_shuf):
-            if fitness > np.random.rand(1)[0]:
-                return parameter
-
-        return None
+        return next(
+            (
+                parameter
+                for parameter, fitness in zip(param_list_shuf, fit_list_shuf)
+                if fitness > np.random.rand(1)[0]
+            ),
+            None,
+        )
 
     def _serial_iterator(self, param_list):
         """Function wrapper to calculate the fitness.
@@ -301,9 +302,7 @@ class GeneticAlgorithm(object):
         for r in pool.imap_unordered(_cross_validate, args):
             fit[r[0]] = r[1]
 
-        # Return fitness in original order.
-        fit_reordered = fit[np.argsort(i), :]
-        return fit_reordered
+        return fit[np.argsort(i), :]
 
     def _pareto_transform(self, fitness):
         """Function to transform a variable with fitness to a pareto fitness.

@@ -124,38 +124,35 @@ def list_mendeleev_params(numbers, params=None):
         params = default_params
     special_params = 0
     n_params = len(params)
-    for p, param in enumerate(params):
-        if param == 'oxistates':
+    for param in params:
+        if param == 'block':
             special_params += 1
-            n_params += 2
+            n_params += 3
         elif param == 'econf':
             special_params += 1
             n_params += 4
-        elif param == 'block':
-            special_params += 1
-            n_params += 3
         elif param == 'ionenergies':
             special_params += 1
+        elif param == 'oxistates':
+            special_params += 1
+            n_params += 2
     dat = []
     for Z in numbers:
         mnlv = get_mendeleev_params(Z, params=params)
-        if special_params > 0:
-            line = mnlv[:-special_params]
-        else:
-            line = mnlv
+        line = mnlv[:-special_params] if special_params > 0 else mnlv
         for p, param in enumerate(params):
-            if param == 'oxistates':
+            if param == 'block':
+                line += block2number[mnlv[p]]
+            elif param == 'econf':
+                line += list(n_outer(mnlv[p]))
+            elif param == 'ionenergies':
+                line += [mnlv[p]['1']]
+            elif param == 'oxistates':
                 line += [np.nanmin(mnlv[p]),
                          np.nanmedian(mnlv[p]),
                          np.nanmax(mnlv[p])]
-            elif param == 'econf':
-                line += list(n_outer(mnlv[p]))
-            elif param == 'block':
-                line += block2number[mnlv[p]]
-            elif param == 'ionenergies':
-                line += [mnlv[p]['1']]
         dat.append(line)
-    if len(dat) == 0:
+    if not dat:
         dat.append([np.nan] * n_params)
     result = np.array(dat, dtype=float)
     if result.ndim == 1:
@@ -183,7 +180,7 @@ def stat_mendeleev_params(composition, params=None):
     symbol = ''
     n_float = -1
     n_symbol = -1
-    for n_char, char in enumerate(composition):
+    for char in composition:
         if char.isupper():
             if n_symbol >= 0:
                 if n_float < n_symbol:
@@ -209,19 +206,15 @@ def stat_mendeleev_params(composition, params=None):
                 symbol += char
         elif char.isdigit():
             if n_symbol == -1:
-                warnings.warn(composition + ' skipped')
+                warnings.warn(f'{composition} skipped')
                 continue
             # Retrive coefficient.
-            if scanning_float:
-                pass
-            else:
+            if not scanning_float:
                 weigths.append(coefs[n_float])
                 n_float += 1
                 scanning_float = True
         else:
-            warnings.warn(composition + ' skipped')
-            continue
-
+            warnings.warn(f'{composition} skipped')
     if n_float < n_symbol:
         # Append 1 if no previous coefficient.
         n_float += 1
@@ -238,38 +231,35 @@ def stat_mendeleev_params(composition, params=None):
         params = default_params
     special_params = 0
     n_params = len(params)
-    for p, param in enumerate(params):
-        if param == 'oxistates':
+    for param in params:
+        if param == 'block':
             special_params += 1
-            n_params += 2
+            n_params += 3
         elif param == 'econf':
             special_params += 1
             n_params += 4
-        elif param == 'block':
-            special_params += 1
-            n_params += 3
         elif param == 'ionenergies':
             special_params += 1
+        elif param == 'oxistates':
+            special_params += 1
+            n_params += 2
     dat = []
     for Z in numbers:
         mnlv = get_mendeleev_params(Z, params=params)
-        if special_params > 0:
-            line = mnlv[:-special_params]
-        else:
-            line = mnlv
+        line = mnlv[:-special_params] if special_params > 0 else mnlv
         for p, param in enumerate(params):
-            if param == 'oxistates':
+            if param == 'block':
+                line += block2number[mnlv[p]]
+            elif param == 'econf':
+                line += list(n_outer(mnlv[p]))
+            elif param == 'ionenergies':
+                line += [mnlv[p]['1']]
+            elif param == 'oxistates':
                 line += [np.nanmin(mnlv[p]),
                          np.nanmedian(mnlv[p]),
                          np.nanmax(mnlv[p])]
-            elif param == 'econf':
-                line += list(n_outer(mnlv[p]))
-            elif param == 'block':
-                line += block2number[mnlv[p]]
-            elif param == 'ionenergies':
-                line += [mnlv[p]['1']]
         dat.append(line)
-    if len(dat) == 0:
+    if not dat:
         dat.append([np.nan] * n_params)
     result = np.array(dat, dtype=float)
     if result.ndim == 1:

@@ -11,17 +11,13 @@ class PrototypeSites(object):
 
     def __init__(self, site_dict=None):
         if site_dict is None:
-            site_dict = {}
-            # default is perovskite
-            site_dict['A'] = [1]
-            site_dict['B'] = [1]
-            site_dict['C'] = [3, '-omit']
+            site_dict = {'A': [1], 'B': [1], 'C': [3, '-omit']}
         self.site_dict = site_dict
         self.site_list = site_dict.keys()
         self.site_list.sort()
-        temp_str = []
-        for si in self.site_list:
-            temp_str.append(' '.join([str(x) for x in self.site_dict[si]]))
+        temp_str = [
+            ' '.join([str(x) for x in self.site_dict[si]]) for si in self.site_list
+        ]
         self.site_str = '\n'.join(temp_str)
 
 
@@ -63,33 +59,28 @@ data attributes generate
 save data ./%s/proto_FP csv
 exit''' % (self.temp_path, self.magpie_path, self.txt_path, self.target,
            self.temp_path)
-        self.magpie = 'java -jar %s/Magpie.jar' % self.magpie_path
+        self.magpie = f'java -jar {self.magpie_path}/Magpie.jar'
         self.delete_temp = delete_temp
 
     def write_proto_input(self):
         """Write Prototype input for Magpie."""
-        if not os.path.exists(self.temp_path):
-            os.mkdir(self.temp_path)
-        else:
+        if os.path.exists(self.temp_path):
             import shutil
             shutil.rmtree(self.temp_path)
-            os.mkdir(self.temp_path)
-        pro_dict = {}
-        for pro in self.properties:
-            pro_dict[pro] = []
+        os.mkdir(self.temp_path)
+        pro_dict = {pro: [] for pro in self.properties}
         # check whether all sites are given in atoms
         for si in self.sites.site_list:
             if si not in self.properties:
-                raise ValueError('No information for %s' % si)
+                raise ValueError(f'No information for {si}')
 
         fml = []
         id_list = []
-        i = 0
-        for at in self.atoms:
+        for i, at in enumerate(self.atoms):
             at_name = ''
             for si in self.sites.site_list:
                 at_name = at_name + \
-                    getattr(at, si) + str(self.sites.site_dict[si][0])
+                        getattr(at, si) + str(self.sites.site_dict[si][0])
             at_name = at_name.replace('1', '')
             fml.append(at_name)
             for pro in self.properties:
@@ -98,24 +89,22 @@ exit''' % (self.temp_path, self.magpie_path, self.txt_path, self.target,
                 else:
                     pro_dict[pro].append(None)
             id_list.append(i)
-            i += 1
         pro_dict['formula'] = fml
         pro_dict['id'] = id_list
         temp_pd = pd.DataFrame.from_dict(pro_dict)
         temp_pd = temp_pd[['formula', 'id'] + self.properties]
         self.input_pd = temp_pd
         temp_pd.to_csv(self.txt_path, sep=' ', index=False)
-        f = open(self.temp_path + '/prototype_FP.in', 'w')
-        f.writelines(self.proto_input)
-        f.close()
-        f = open(self.temp_path + '/site-info.txt', 'w')
-        f.write(self.sites.site_str)
-        f.close()
+        with open(self.temp_path + '/prototype_FP.in', 'w') as f:
+            f.writelines(self.proto_input)
+        with open(self.temp_path + '/site-info.txt', 'w') as f:
+            f.write(self.sites.site_str)
 
     def run_proto(self):
         """Call Magpie to generate Prototype FP and write to proto_FP.csv."""
-        os.system("%s %s/prototype_FP.in |tee %s/prototype_FP.log" % (
-            self.magpie, self.temp_path, self.temp_path))
+        os.system(
+            f"{self.magpie} {self.temp_path}/prototype_FP.in |tee {self.temp_path}/prototype_FP.log"
+        )
 
     def update_str(self):
         self.proto_input = '''data = new data.materials.PrototypeDataset %s/site-info.txt

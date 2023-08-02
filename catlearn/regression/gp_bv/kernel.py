@@ -36,7 +36,7 @@ class Kernel:
         return self.hp
     
     def __repr__(self):
-        return 'Kernel(hp={})'.format(self.hp)
+        return f'Kernel(hp={self.hp})'
 
 
 
@@ -154,7 +154,7 @@ class SE(Kernel):
         return hp_deriv
 
     def __repr__(self):
-        return 'SE(hp={})'.format(self.hp)
+        return f'SE(hp={self.hp})'
 
 
 
@@ -210,9 +210,9 @@ class SE_Deriv(Kernel):
         dim=len(X[0])
         if dists is None:
             dists=self.dist_m(X,Q)
-        
+
+        nd1=len(X)
         if Q is None:
-            nd1=len(X)
             Kext=np.zeros((nd1*(dim+1),nd1*(dim+1)))
             K=(self.hp['alpha']**2)*np.exp((-0.5/(self.hp['length']**2))*np.sum(dists**2,axis=0))
             dists=dists/(self.hp['length']**2)
@@ -225,7 +225,7 @@ class SE_Deriv(Kernel):
                 for d2 in range(d1+1,dim+1):
                     Kext[nd1*d1:nd1*(d1+1),nd1*d2:nd1*(d2+1)]=Kext[nd1*d2:nd1*(d2+1),nd1*d1:nd1*(d1+1)]=dists[d2-1]*dis_K
         else:
-            nd1=len(X) ; nd2=len(Q)
+            nd2=len(Q)
             if get_derivatives:
                 Kext=np.zeros((nd1*(dim+1),nd2*(dim+1)))
             else:
@@ -327,7 +327,7 @@ class SE_Deriv(Kernel):
         return hp_deriv
 
     def __repr__(self):
-        return 'SE_Deriv(hp={})'.format(self.hp)
+        return f'SE_Deriv(hp={self.hp})'
 
 
 
@@ -448,14 +448,11 @@ class SE_Multi(Kernel):
                 Kd=np.array([squareform((distsl[d]/self.hp['length'][d])*Kd) for d in range(len(X[0]))])
             else:
                 Kd=np.array([squareform(distsl[d]/self.hp['length'][d])*KXX for d in range(len(X[0]))])
-            if len(X[0])>1:
-                hp_deriv['length']=Kd
-            else:
-                hp_deriv['length']=Kd[0]
+            hp_deriv['length'] = Kd if len(X[0])>1 else Kd[0]
         return hp_deriv
 
     def __repr__(self):
-        return 'SE_Multi(hp={})'.format(self.hp)
+        return f'SE_Multi(hp={self.hp})'
 
 
 
@@ -513,9 +510,9 @@ class SE_Multi_Deriv(Kernel):
             self.hp['length']=np.array([self.hp['length'].item(0)]*dim)
         if dists is None:
             dists=self.dist_m(X,Q)
-        
+
+        nd1=len(X)
         if Q is None:
-            nd1=len(X)
             Kext=np.zeros((nd1*(dim+1),nd1*(dim+1)))
             K=(self.hp['alpha']**2)*np.exp((-0.5)*np.sum((dists/self.hp['length'].reshape(-1,1,1))**2,axis=0))
             dists=dists/(self.hp['length'].reshape(-1,1,1)**2)
@@ -528,7 +525,7 @@ class SE_Multi_Deriv(Kernel):
                 for d2 in range(d1+1,dim+1):
                     Kext[nd1*d1:nd1*(d1+1),nd1*d2:nd1*(d2+1)]=Kext[nd1*d2:nd1*(d2+1),nd1*d1:nd1*(d1+1)]=dists[d2-1]*dis_K
         else:
-            nd1=len(X) ; nd2=len(Q)
+            nd2=len(Q)
             if get_derivatives:
                 Kext=np.zeros((nd1*(dim+1),nd2*(dim+1)))
             else:
@@ -662,5 +659,5 @@ class SE_Multi_Deriv(Kernel):
         return hp_deriv
 
     def __repr__(self):
-        return 'SE_Multi_Deriv(hp={})'.format(self.hp)
+        return f'SE_Multi_Deriv(hp={self.hp})'
 

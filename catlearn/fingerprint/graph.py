@@ -136,10 +136,7 @@ class GraphFingerprintGenerator(BaseGenerator):
         if not isinstance(self.element_parameters, list):
             self.element_parameters = [self.element_parameters]
 
-        # Initialize feature vector.
-        features = np.zeros(self.atom_len * len(self.element_parameters))
-
-        return features
+        return np.zeros(self.atom_len * len(self.element_parameters))
 
     def _normalize_neighbors(self, data):
         """Function to invert importance of neighbor shells.
@@ -196,10 +193,7 @@ class GraphFingerprintGenerator(BaseGenerator):
 
         matrix = np.zeros((self.atom_len, self.atom_len), dtype='f')
 
-        atomic_prop = {}
-        for a in set(ano):
-            atomic_prop[a] = self.element_data[str(a)].get(prop)
-
+        atomic_prop = {a: self.element_data[str(a)].get(prop) for a in set(ano)}
         diag = np.diag([atomic_prop[a] for a in ano])
         d, f = np.shape(diag)
         matrix[:d, :f] = diag

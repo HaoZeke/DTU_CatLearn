@@ -29,7 +29,7 @@ def ase_to_networkx(atoms, cutoffs=None):
     atoms_graph : object
         A networkx graph object.
     """
-    msg = 'Please pass an ASE atoms object, not a {}'.format(type(atoms))
+    msg = f'Please pass an ASE atoms object, not a {type(atoms)}'
     assert isinstance(atoms, Atoms), msg
 
     an = atoms.get_atomic_numbers()
@@ -65,7 +65,7 @@ def networkx_to_adjacency(graph):
     matrix : array
         The numpy adjacency matrix.
     """
-    msg = 'Please pass an networkx graph object, not a {}'.format(type(graph))
+    msg = f'Please pass an networkx graph object, not a {type(graph)}'
     assert isinstance(graph, nx.Graph), msg
 
     atomic_numbers = list(dict(graph.nodes('atomic_number')).values())
@@ -91,10 +91,7 @@ def matrix_to_nl(matrix):
             neighborlist.
     """
     n, m = np.shape(matrix)
-    nl = {}
     matrix = matrix.astype(int)
     np.fill_diagonal(matrix, 0)
     assert (matrix == matrix.T).all()
-    for i in range(n):
-        nl.update({i: np.where(matrix[i, :] == 1)[0].tolist()})
-    return nl
+    return {i: np.where(matrix[i, :] == 1)[0].tolist() for i in range(n)}

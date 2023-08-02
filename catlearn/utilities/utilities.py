@@ -149,6 +149,4 @@ def geometry_hash(atoms):
     # Assemble a master hash and convert it through an md5
     master_hash = cell_hash + pos_hash + sym_hash
     md5 = hashlib.md5(master_hash)
-    _hash = md5.hexdigest()
-
-    return _hash
+    return md5.hexdigest()

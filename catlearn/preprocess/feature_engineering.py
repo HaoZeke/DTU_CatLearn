@@ -121,8 +121,7 @@ def get_labels_order_2(l, div=False):
     for f1 in range(L):
         if not div:
             s = f1
-        for f2 in range(s, L):
-            new_features.append(l[f1] + op + l[f2])
+        new_features.extend(l[f1] + op + l[f2] for f2 in range(s, L))
     return new_features
 
 
@@ -172,9 +171,9 @@ def get_labels_order_2ab(l, a, b):
     L = len(l)
     new_features = []
     for f1 in range(L):
-        for f2 in range(f1, L):
-            new_features.append(l[f1] + '_' + str(a) + '_x_' + l[f2] + '_' +
-                                str(b))
+        new_features.extend(
+            f'{l[f1]}_{str(a)}_x_{l[f2]}_{str(b)}' for f2 in range(f1, L)
+        )
     return new_features
 
 
@@ -226,10 +225,9 @@ def get_labels_ablog(l, a, b):
     L = len(l)
     new_features = []
     for f1 in range(L):
-        for f2 in range(f1, L):
-            # TODO Better string formatting with numbers.
-            new_features.append('log' + str(a) + '_' + l[f1] + 'log' + str(b) +
-                                '_' + l[f2])
+        new_features.extend(
+            f'log{str(a)}_{l[f1]}log{str(b)}_{l[f2]}' for f2 in range(f1, L)
+        )
     return new_features
 
 
@@ -293,11 +291,8 @@ def _decode_key(p, key):
     p = [str(i) for i in p]
     elements = key.split('*')
     translated_elements = [p[int(i)] for i in elements]
-    unique_elements = list(set(translated_elements))
-    unique_elements.sort()
-    count_elements = {}
-    for ele in unique_elements:
-        count_elements[ele] = 0
+    unique_elements = sorted(set(translated_elements))
+    count_elements = {ele: 0 for ele in unique_elements}
     for ele in translated_elements:
         count_elements[ele] += 1
     ele_list = []
@@ -307,8 +302,7 @@ def _decode_key(p, key):
             ele_list.append(ele)
         if count >= 2:
             ele_list.append(ele + '^%d' % count)
-    p_prime = '*'.join(ele_list)
-    return p_prime
+    return '*'.join(ele_list)
 
 
 def generate_positive_features(p, N, exclude=False, s=False):
@@ -343,32 +337,30 @@ def generate_positive_features(p, N, exclude=False, s=False):
     """
     if N == 0 and s:
         return ['1']
-    elif N == 0 and not s:
+    elif N == 0:
         return [1]
     elif N == 1 and not exclude and s:
         return p + ["1"]
-    elif N == 1 and not exclude and not s:
+    elif N == 1 and not exclude:
         return p + [1]
     if N == 1 and exclude:
         return p
-    else:
-        all_powers = []
-        p = [str(i) for i in p]
-        for i in range(N, 0, -1):
-            thisPower = combinations_with_replacement(p, i)
-            tuples = list(thisPower)
-            ntuples = len(tuples)
-            thisPowerFeatures = ['*'.join(tuples[j]) for j in range(ntuples)]
-            if not s:
-                thisPowerFeatures = [eval(j) for j in thisPowerFeatures]
-            all_powers.append(thisPowerFeatures)
-        if not exclude:
-            if s:
-                all_powers.append(['1'])
-            else:
-                all_powers.append([1])
-        all_powers = [item for sublist in all_powers for item in sublist]
-        return all_powers
+    all_powers = []
+    p = [str(i) for i in p]
+    for i in range(N, 0, -1):
+        thisPower = combinations_with_replacement(p, i)
+        tuples = list(thisPower)
+        ntuples = len(tuples)
+        thisPowerFeatures = ['*'.join(tuples[j]) for j in range(ntuples)]
+        if not s:
+            thisPowerFeatures = [eval(j) for j in thisPowerFeatures]
+        all_powers.append(thisPowerFeatures)
+    if not exclude:
+        if s:
+            all_powers.append(['1'])
+        else:
+            all_powers.append([1])
+    return [item for sublist in all_powers for item in sublist]
 
 
 def generate_features(p, max_num=2, max_den=1, log=False, sqrt=False,
@@ -410,20 +402,18 @@ def generate_features(p, max_num=2, max_den=1, log=False, sqrt=False,
     """
     if max_den == 0:
         return generate_positive_features(p, max_num, exclude=exclude, s=s)
+    features = []
     if max_num == 0:
         dup_feature_keys = generate_positive_features(p, max_den,
                                                       exclude=exclude, s=True)
-        features = []
         for key in dup_feature_keys:
-            val = '1/(' + key + ')'
+            val = f'1/({key})'
             features.append(val)
         if not s:
-            features = [eval('1.*' + i) for i in features]
-        return features
+            features = [eval(f'1.*{i}') for i in features]
     else:
         num_p = len(p)
         p_str = [str(i) for i in range(num_p)]
-        features = []
         feature_keys = generate_positive_features(p_str, max_num, exclude=True,
                                                   s=True)
         dup_feature_keys = generate_positive_features(p_str, max_den,
@@ -434,16 +424,14 @@ def generate_features(p, max_num=2, max_den=1, log=False, sqrt=False,
                 l2 = key2.split('*')
                 intersect = list(set.intersection(set(l1), set(l2)))
                 if not intersect:
-                    val = _decode_key(p, key1) + '/(' + \
-                        _decode_key(p, key2) + ')'
+                    val = f'{_decode_key(p, key1)}/({_decode_key(p, key2)})'
                     features.append(val)
-        for key1 in feature_keys:
-            features.append(_decode_key(p, key1) + '/(1)')
-        for key2 in dup_feature_keys:
-            features.append('1/(' + _decode_key(p, key2) + ')')
+        features.extend(f'{_decode_key(p, key1)}/(1)' for key1 in feature_keys)
+        features.extend(f'1/({_decode_key(p, key2)})' for key2 in dup_feature_keys)
         if not exclude:
             features.append('1')
         if not s:
             features = [eval('1.*' +
                              str.replace(i, '^', '**')) for i in features]
-        return features
+
+    return features

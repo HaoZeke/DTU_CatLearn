@@ -120,8 +120,7 @@ class FeatureScreening(object):
                                                   reverse=True))]
 
         find_min = [n]
-        for i in randf:
-            find_min.append(sort_list[1].index(i))
+        find_min.extend(sort_list[1].index(i) for i in randf)
         size = min(find_min)
 
         select['index'] = sort_list[1]
@@ -266,11 +265,8 @@ class FeatureScreening(object):
                 corr.append(0.)
             elif self.correlation != 'pearson':
                 corr.append(pearsonr(x=d.ravel(), y=t.ravel())[0])
-            elif self.correlation != 'spearman':
+            else:
                 corr.append(spearmanr(a=d, b=t)[0])
-            elif self.correlation != 'kendall':
-                corr.append(kendalltau(x=d, y=t)[0])
-
         return corr, order
 
     def _dimension_check(self, n, f, size, step):

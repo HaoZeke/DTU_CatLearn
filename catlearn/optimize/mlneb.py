@@ -79,7 +79,7 @@ class MLNEB(object):
         self.climb=climb
         self.neb_kwargs=neb_kwargs.copy()
         # Whether to have the full output
-        self.full_output=full_output  
+        self.full_output=full_output
         # Setup the ML calculator
         if mlcalc is None:
             mlcalc=self.get_default_mlcalc()
@@ -102,7 +102,7 @@ class MLNEB(object):
         self.local_opt=local_opt
         self.local_opt_kwargs=local_opt_kwargs
         # Set spring constant if it is not given
-        if 'k' not in self.neb_kwargs.keys() or self.neb_kwargs['k']==None:
+        if 'k' not in self.neb_kwargs.keys() or self.neb_kwargs['k'] is None:
             d_start_end=np.linalg.norm(self.end.get_positions()-self.start.get_positions())
             self.neb_kwargs['k']=2.0*np.sqrt(self.n_images-1)/d_start_end
         # Trajectories
@@ -185,17 +185,18 @@ class MLNEB(object):
         # Use a premade interpolation path
         if isinstance(interpolation,(list,np.ndarray)):
             images=interpolation.copy()
-        else:
-            if interpolation in ['linear','idpp']:
+        elif interpolation in ['linear','idpp']:
                 # Make path by the NEB methods interpolation
-                images=[self.start.copy() for i in range(self.n_images-1)]+[self.end.copy()]
-                neb=NEB(images,**self.neb_kwargs)
-                if interpolation=='linear':
-                    neb.interpolate(mic=self.mic,**self.interpolation_kwargs)
-                elif interpolation=='idpp':
-                    neb.interpolate(method='idpp',mic=self.mic,**self.interpolation_kwargs)
-            else:
-                images=read(interpolation,':')
+            images = [self.start.copy() for _ in range(self.n_images - 1)] + [
+                self.end.copy()
+            ]
+            neb=NEB(images,**self.neb_kwargs)
+            if interpolation=='linear':
+                neb.interpolate(mic=self.mic,**self.interpolation_kwargs)
+            elif interpolation=='idpp':
+                neb.interpolate(method='idpp',mic=self.mic,**self.interpolation_kwargs)
+        else:
+            images=read(interpolation,':')
         # Attach the ML calculator to all images
         images=self.attach_mlcalc(images)
         return images
@@ -267,15 +268,12 @@ class MLNEB(object):
             # Check whether the predicted fmax for each image are lower than the NEB convergence fmax
             if self.get_fmax_predictions(images)<fmax:
                 self.message_system('Too low forces on initial path!')
-                candidate=self.choose_candidate(images)
-                return candidate
+                return self.choose_candidate(images)
             # Run the NEB on the surrogate surface
             self.message_system('Starting NEB without climbing image on surrogate surface.')
             images=self.mlneb_opt(images,fmax=fmax,ml_steps=ml_steps,max_unc=max_unc,climb=False)
             self.save_mlneb(images)
-            # Get the candidate
-            candidate=self.choose_candidate(images)
-            return candidate
+            return self.choose_candidate(images)
         return None
 
     def get_predictions(self,images):
@@ -366,7 +364,7 @@ class MLNEB(object):
                 len(self.print_neb_list)
             except:
                 self.print_neb_list=['| Step |        Time         | Pred. barrier (-->) | Pred. barrier (<--) | Max. uncert. | Avg. uncert. |   fmax   |']
-            msg='|{0:6d}| '.format(step)+'{} |'.format(now)
+            msg = '|{0:6d}| '.format(step) + f'{now} |'
             msg+='{0:21f}|'.format(self.emax_ml-self.start_energy)+'{0:21f}|'.format(self.emax_ml-self.end_energy)
             msg+='{0:14f}|'.format(self.umax_ml)
             msg+='{0:14f}|'.format(np.mean(self.umean_ml))+'{0:10f}|'.format(self.max_abs_forces)
@@ -378,15 +376,14 @@ class MLNEB(object):
     def check_convergence(self,fmax,unc_convergence):
         " Check if the ML-NEB is converged to the final path with low uncertainty "
         converged=False
-        if self.rank==0:
             # Check the force criterion is met
-            if self.max_abs_forces<=fmax and self.umax_ml<=unc_convergence:
-                if np.abs(self.energy_pred-self.energy)<=unc_convergence:
+        if self.max_abs_forces<=fmax and self.umax_ml<=unc_convergence:
+            if np.abs(self.energy_pred-self.energy)<=unc_convergence:
+                if self.rank==0:
                     self.message_system("Congratulations! Your ML NEB is converged.") 
                     self.print_cite()
                     converged=True
-        converged=self.comm.bcast(converged,root=0)
-        return converged
+        return self.comm.bcast(converged,root=0)
 
     def print_cite(self):
         msg = "\n" + "-" * 79 + "\n"

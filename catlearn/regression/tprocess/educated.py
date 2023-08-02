@@ -15,7 +15,7 @@ class Educated_guess:
         " Get the best educated guess of the hyperparameters "
         if parameters is None:
             parameters=list(self.TP.hp.keys())
-            parameters=parameters+['noise']
+            parameters += ['noise']
         if 'correction' in parameters:
             parameters.remove('correction')
         parameters=sorted(parameters)
@@ -38,7 +38,7 @@ class Educated_guess:
         " Get the educated guess bounds of the hyperparameters "
         if parameters is None:
             parameters=list(self.TP.hp.keys())
-            parameters=parameters+['noise']
+            parameters += ['noise']
         if 'correction' in parameters:
             parameters.remove('correction')
         parameters=sorted(parameters)
@@ -83,10 +83,7 @@ class Educated_guess:
         if isinstance(X[0],FingerprintObject):
             X=np.array([fp.get_vector() for fp in X])
         for d in range(l_dim):
-            if l_dim==1:
-                dis=pdist(X)
-            else:
-                dis=pdist(X[:,d:d+1])
+            dis = pdist(X) if l_dim==1 else pdist(X[:,d:d+1])
             dis=np.where(dis==0.0,np.nan,dis)
             if len(dis)==0:
                 dis=[1.0]
@@ -103,10 +100,7 @@ class Educated_guess:
         if isinstance(X[0],FingerprintObject):
             X=np.array([fp.get_vector() for fp in X])
         for d in range(l_dim):
-            if l_dim==1:
-                dis=pdist(X)
-            else:
-                dis=pdist(X[:,d:d+1])
+            dis = pdist(X) if l_dim==1 else pdist(X[:,d:d+1])
             dis=np.where(dis==0.0,np.nan,dis)
             if len(dis)==0:
                 dis=[1.0]

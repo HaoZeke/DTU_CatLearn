@@ -164,7 +164,7 @@ def hierarchy(cv, features, min_split, max_split, new_data=True, ridge=True,
             # When gone through all data within hier_level a file is saved
             # for varying feature with const. data size.
             arr = np.hstack([np.vstack(), np.vstack])
-            np.save('hierarchy_' + str() + '.npy', arr)
+            np.save(f'hierarchy_{str()}.npy', arr)
 
         if (set_size and p_error and result) == []:
             # If no feature set is found, go to the next feature set.
@@ -279,6 +279,4 @@ def _single_test(args):
     train = train_features[-n:, :]
     targets = train_targets[-n:]
 
-    # Calculate the error or other metrics from the model.
-    result = model(train, targets, test, test_targets)
-    return result
+    return model(train, targets, test, test_targets)

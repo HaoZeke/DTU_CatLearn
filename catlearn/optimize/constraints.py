@@ -29,8 +29,7 @@ def create_mask(ini, constraints):
             pass
 
     mask_constraints = mask_constraints.flatten()
-    index_mask_constraints = np.argwhere(mask_constraints)
-    return index_mask_constraints
+    return np.argwhere(mask_constraints)
 
 
 def apply_mask(list_to_mask=None, mask_index=None):

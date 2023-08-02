@@ -6,16 +6,24 @@ def general_kernel(features, dimension='single'):
     """Generate a default kernel."""
     length = default_lengthscale(features, dimension)
 
-    default = [
-        {'type': 'linear', 'scaling': 1.},
-        {'type': 'constant', 'const': 1.},
-        {'type': 'gaussian', 'width': length, 'scaling': 1.,
-         'dimension': dimension},
-        {'type': 'quadratic', 'slope': length, 'degree': 1., 'scaling': 1.,
-         'dimension': dimension},
-        {'type': 'laplacian', 'width': length, 'scaling': 1.}]
-
-    return default
+    return [
+        {'type': 'linear', 'scaling': 1.0},
+        {'type': 'constant', 'const': 1.0},
+        {
+            'type': 'gaussian',
+            'width': length,
+            'scaling': 1.0,
+            'dimension': dimension,
+        },
+        {
+            'type': 'quadratic',
+            'slope': length,
+            'degree': 1.0,
+            'scaling': 1.0,
+            'dimension': dimension,
+        },
+        {'type': 'laplacian', 'width': length, 'scaling': 1.0},
+    ]
 
 
 def default_lengthscale(features, dimension='single'):
@@ -35,10 +43,7 @@ def default_lengthscale(features, dimension='single'):
     """
     msg = 'The dimension parameter must be "single" or "features"'
     assert dimension in ['single', 'features'], msg
-    axis = None
-    if dimension is not 'single':
-        axis = 0
-
+    axis = 0 if dimension is not 'single' else None
     std = np.std(features, axis=axis)
 
     return std
@@ -48,7 +53,11 @@ def smooth_kernel(features, dimension='single'):
     """Generate a default kernel."""
     length = default_lengthscale(features, dimension)
 
-    default = [{'type': 'gaussian', 'width': length, 'scaling': 1.,
-                'dimension': dimension}]
-
-    return default
+    return [
+        {
+            'type': 'gaussian',
+            'width': length,
+            'scaling': 1.0,
+            'dimension': dimension,
+        }
+    ]

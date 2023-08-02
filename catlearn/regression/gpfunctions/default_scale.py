@@ -66,9 +66,7 @@ class ScaleData(object):
         """
         test_features = np.asarray(test_features)
         center = test_features - self.feature_data['mean']
-        scaled_features = center / self.feature_data['std']
-
-        return scaled_features
+        return center / self.feature_data['std']
 
     def rescale_targets(self, predictions):
         """Rescale predictions.
@@ -84,6 +82,4 @@ class ScaleData(object):
             The rescaled predictions.
         """
         predictions = np.asarray(predictions)
-        p = (predictions * self.target_data['std']) + self.target_data['mean']
-
-        return p
+        return (predictions * self.target_data['std']) + self.target_data['mean']

@@ -33,18 +33,6 @@ def population_reduction(pop, fit, population_size):
 
     return population, fitness
 
-    # Reinitialize everything as empty list.
-    population, fitness = [], []
-
-    # Fill the lists with current best candidates.
-    index = 0
-    while len(population) < population_size:
-        population.append(global_details[index][0])
-        fitness.append(global_details[index][1])
-        index += 1
-
-    return population, fitness
-
 
 def remove_duplicates(population, fitness, accuracy):
     """Function to delete duplicate candidates based on fitness.
