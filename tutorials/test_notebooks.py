@@ -15,21 +15,17 @@ def test_notebooks(notebook):
     # Break up the path.
     psplit = notebook.split('/')
     name = psplit.pop(-1)
-    print(fg.red + '\ntesting notebook: ' + fg.rs + fg.green +
-          '{}\n'.format(name) + fg.rs)
+    print(fg.red + '\ntesting notebook: ' + fg.rs + fg.green + f'{name}\n' + fg.rs)
     dirpath = '/'.join(psplit)
 
-    # Execute the jupyter notebook.
-    cmd = 'jupyter nbconvert {} --to notebook --execute '.format(notebook)
-    cmd += '--ExecutePreprocessor.timeout=6000 --output out_file'
+    cmd = f'jupyter nbconvert {notebook} --to notebook --execute --ExecutePreprocessor.timeout=6000 --output out_file'
     subprocess.call(cmd, shell=True)
 
     # Try and clean up output. Otherwise fail and exit.
     try:
-        os.remove('{}/out_file.ipynb'.format(dirpath))
+        os.remove(f'{dirpath}/out_file.ipynb')
     except FileNotFoundError:
-        print(ef.bold + fg(201) + '\n{} failed\n'.format(name) + fg.rs +
-              rs.bold)
+        print(ef.bold + fg(201) + f'\n{name} failed\n' + fg.rs + rs.bold)
         exit()
 
 

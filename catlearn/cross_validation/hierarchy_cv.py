@@ -51,7 +51,7 @@ class Hierarchy(object):
         uid = [str(uuid.uuid4()) for _ in range(len(targets))]
         data = np.concatenate((np.reshape(uid, (len(uid), 1)), data), axis=1)
 
-        descriptors = ['f' + str(i) for i in range(np.shape(features)[1])]
+        descriptors = [f'f{str(i)}' for i in range(np.shape(features)[1])]
         targets = ['target']
         names = descriptors + targets
 
@@ -81,12 +81,12 @@ class Hierarchy(object):
         # Randomize the indices and remove any remainder from first split.
         shuffle(all_index)
         if max_split is not None:
-            assert len(all_index) > max_split and max_split >= 2 * min_split
+            assert len(all_index) > max_split >= 2 * min_split
             # Cut off the list of indices.
             all_index = all_index[:max_split]
 
         assert len(all_index) > min_split
-        size = int(len(all_index) / 2)
+        size = len(all_index) // 2
         data['1_1'], data['1_2'] = all_index[:size], all_index[size:]
 
         # TODO fix no_split because it is way too large.
@@ -96,12 +96,12 @@ class Hierarchy(object):
             subsplit = 2 ** i
             sn = 1
             for j in range(1, subsplit + 1):
-                current_split = data[str(i) + '_' + str(j)]
+                current_split = data[f'{str(i)}_{str(j)}']
                 shuffle(current_split)
-                new_split = int(len(current_split) / 2)
+                new_split = len(current_split) // 2
                 if new_split >= min_split:
-                    first_name, sn = str(i + 1) + '_' + str(sn), sn + 1
-                    second_name, sn = str(i + 1) + '_' + str(sn), sn + 1
+                    first_name, sn = f'{str(i + 1)}_{str(sn)}', sn + 1
+                    second_name, sn = f'{str(i + 1)}_{str(sn)}', sn + 1
                     data[first_name] = current_split[:new_split]
                     data[second_name] = current_split[new_split:]
                 else:
@@ -119,8 +119,7 @@ class Hierarchy(object):
                       'rb') as textfile:
                 data = pickle.load(textfile)
         else:
-            raise NotImplementedError(
-                '{} format not supported'.format(self.file_format))
+            raise NotImplementedError(f'{self.file_format} format not supported')
 
         return data
 
@@ -136,9 +135,9 @@ class Hierarchy(object):
         """
         index1, index2 = indicies.split('_')
         if split is None:
-            data = self._compile_split(index_split[index1 + '_' + index2])
+            data = self._compile_split(index_split[f'{index1}_{index2}'])
         else:
-            data = self._compile_split(index_split[index1 + '_' + str(split)])
+            data = self._compile_split(index_split[f'{index1}_{str(split)}'])
         data_features = np.array(data[:, 1:-1], np.float64)
         data_targets = np.array(data[:, -1:], np.float64)
 
@@ -240,12 +239,12 @@ class Hierarchy(object):
         data : array
             The index data that has been extracted from the db.
         """
-        data = []
-        for row in self.cursor.execute("SELECT uuid FROM %(table)s"
-                                       % {'table': self.table}):
-            data.append(row[0])
-
-        return data
+        return [
+            row[0]
+            for row in self.cursor.execute(
+                "SELECT uuid FROM %(table)s" % {'table': self.table}
+            )
+        ]
 
     def _write_split(self, data):
         """Function to write the split to file.
@@ -264,8 +263,7 @@ class Hierarchy(object):
                       'wb') as textfile:
                 pickle.dump(data, textfile, protocol=pickle.HIGHEST_PROTOCOL)
         else:
-            raise NotImplementedError(
-                '{} format not supported'.format(self.file_format))
+            raise NotImplementedError(f'{self.file_format} format not supported')
 
     def _compile_split(self, id_list):
         """Function to get actual data from database.
@@ -282,7 +280,7 @@ class Hierarchy(object):
         """
         if len(id_list) > 999:
             store_data = self._get_data(id_list[:999])
-            for i in range(1, int(len(id_list) / 999) + 1):
+            for i in range(1, len(id_list) // 999 + 1):
                 start_index = i * 999
                 if len(id_list[start_index:]) < 999:
                     more_data = self._get_data(id_list[start_index:])
@@ -305,9 +303,9 @@ class Hierarchy(object):
         id_list : list
             The uuids to pull data.
         """
-        qu = ','.join('?' for i in id_list)
+        qu = ','.join('?' for _ in id_list)
         query = 'SELECT * FROM %(table)s WHERE uuid IN (%(uid)s)' \
-            % {'table': self.table, 'uid': qu}
+                % {'table': self.table, 'uid': qu}
         self.cursor.execute(query, id_list)
 
         return self.cursor.fetchall()

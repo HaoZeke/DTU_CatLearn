@@ -5,7 +5,6 @@ from scipy.linalg import cho_factor,cho_solve,eigh
 class Object_functions:
     def __init__(self,**kwargs):
         " The object function that is used to optimize the hyperparameters "
-        pass
 
     def hp(self,theta,parameters):
         " Make hyperparameter dictionary from lists"
@@ -94,11 +93,13 @@ class Object_functions:
         if prior is None:
             return 0
         if not jac:
-            lprior=0
-            for para in set(hp.keys()):
-                if para in prior.keys():
-                    lprior+=np.sum([pr.ln_pdf(hp[para][p]) for p,pr in enumerate(prior[para])])
-            return lprior
+            return sum(
+                np.sum(
+                    [pr.ln_pdf(hp[para][p]) for p, pr in enumerate(prior[para])]
+                )
+                for para in set(hp.keys())
+                if para in prior.keys()
+            )
         lprior_deriv=np.array([])
         for para in parameters_set:
             if para in prior.keys():
@@ -109,11 +110,11 @@ class Object_functions:
 
     def get_K_inv_deriv(self,K_deriv,KXX_inv,multiple_para):
         " Get the diagonal elements of the matrix product of the inverse and derivative covariance matrix "
-        if multiple_para:
-            K_deriv_cho=np.array([np.einsum('ij,ji->',KXX_inv,K_d) for K_d in K_deriv])
-        else:
-            K_deriv_cho=np.einsum('ij,ji->',KXX_inv,K_deriv)
-        return K_deriv_cho
+        return (
+            np.array([np.einsum('ij,ji->', KXX_inv, K_d) for K_d in K_deriv])
+            if multiple_para
+            else np.einsum('ij,ji->', KXX_inv, K_deriv)
+        )
     
     def get_solution(self,sol,TP,parameters,X,Y,prior,jac=False,dis_m=None):
         " Get the solution of the optimization in terms of hyperparameters and TP "

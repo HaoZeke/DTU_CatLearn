@@ -17,10 +17,9 @@ class Optimization_algorithm:
 
     def opt_algo_choise(self,opt_method):
         opt_algo={'function':self.function_value,'fixed':self.fixed,'local':self.local,'grid':self.grid,'line':self.line,\
-            'random':self.random,'basin':self.basin,'guess_driven':self.guess_driven,'dual_annealing_multi':self.dual_annealing_multi,\
-            'dual_annealing_conv':self.dual_annealing_conv,'maximum_est':self.maximum_estimation}
+                'random':self.random,'basin':self.basin,'guess_driven':self.guess_driven,'dual_annealing_multi':self.dual_annealing_multi,\
+                'dual_annealing_conv':self.dual_annealing_conv,'maximum_est':self.maximum_estimation}
         self.run=opt_algo[opt_method.lower()]
-        pass
 
     def minimizer_method(self,fun,GP,parameters,X_tr,Y_tr,prior=None,jac=True,method='TNC',maxiter=5000,bounds=None,constraints=(),tol=None,options={},dis_m=None,**kwargs):
         " Wrapped scipy local minimizer "
@@ -34,14 +33,14 @@ class Optimization_algorithm:
         # Update options with maxiterations and default values
         options['maxiter']=int(maxiter)
         options_local={'nelder-mead':{'adaptive':True},'l-bfgs-b':{'maxcor':10,'maxls':20},'tnc':{'maxCGit':4,'eta':0.5,'stepmx':5,'accuracy':1e-5,'rescale':3}}
-        if method in options_local.keys():
+        if method in options_local:
             for key in options_local[method].keys():
                 if key not in options:
                     options[key]=options_local[method][key]
-        # Update tolerance
-        tol_local={'nelder-mead':1e-8,'powell':1e-3,'cg':1e-3,'bfgs':1e-10,'l-bfgs-b':1e-10,'tnc':1e-12,'slsqp':1e-12}
         if tol is None:
-            if method in tol_local.keys():
+            # Update tolerance
+            tol_local={'nelder-mead':1e-8,'powell':1e-3,'cg':1e-3,'bfgs':1e-10,'l-bfgs-b':1e-10,'tnc':1e-12,'slsqp':1e-12}
+            if method in tol_local:
                 tol=tol_local[method]
         if method in ['powell','nelder-mead','cobyla']:
             args=list(args)
@@ -81,13 +80,15 @@ class Optimization_algorithm:
         " Calculate the fixed educated guess of a set of hyperparameters"
         # Set the calculator up 
         sol={'fun':fun(theta,GP,parameters,X_tr,Y_tr,prior,False,dis_m),\
-                'x':theta,'success':False,'nfev':2,'iter':2}
+                    'x':theta,'success':False,'nfev':2,'iter':2}
         from catlearn.regression.gp_bv.educated_guess import Educated_guess
         ed_guess=Educated_guess(GP,fun_name=self.fun_name)
         parameters=list(set(parameters))
         hp=ed_guess.hp(X_tr,Y_tr,parameters=parameters)
         theta=[list(np.array(hp[para]).reshape(-1)) for para in parameters]
-        parameters=sum([[para]*len(theta[p]) for p,para in enumerate(parameters)],[])
+        parameters = sum(
+            ([para] * len(theta[p]) for p, para in enumerate(parameters)), []
+        )
         theta=sum(theta,[])
         i_sort=np.argsort(parameters)
         theta=np.array(theta)[i_sort]
@@ -103,7 +104,7 @@ class Optimization_algorithm:
         # Local optimize if wanted
         if optimize:
             local_maxiter=int(maxiter-2)
-            local_maxiter=0 if local_maxiter<0 else local_maxiter
+            local_maxiter = max(local_maxiter, 0)
             min_opt=self.minimizer_method(fun,GP,parameters,X_tr,Y_tr,prior=prior,maxiter=local_maxiter,dis_m=dis_m,**kwargs)
             mopt=min_opt(sol['x'])
             if mopt['fun']<=sol['fun']:
@@ -137,7 +138,7 @@ class Optimization_algorithm:
         # Number of points per dimension
         if n_each_dim is None:
             n_each_dim=int(maxiter**(1/len(parameters)))
-            n_each_dim=n_each_dim if n_each_dim>1 else 1
+            n_each_dim = max(n_each_dim, 1)
         # Make grid either with the same or different numbers in each dimension
         if isinstance(n_each_dim,int):    
             theta_r=[np.linspace(bounds[p][0],bounds[p][1],n_each_dim+2)[1:-1] for p in range(dim)]
@@ -162,7 +163,7 @@ class Optimization_algorithm:
             i+=1
         # Local optimize the best point if wanted
         local_maxiter=int(maxiter-i)
-        local_maxiter=0 if local_maxiter<0 else local_maxiter
+        local_maxiter = max(local_maxiter, 0)
         min_opt=self.minimizer_method(fun,GP,parameters,X_tr,Y_tr,maxiter=local_maxiter,prior=prior,dis_m=dis_m,options=options,**kwargs)
         if optimize:
             mopt=min_opt(sol['x'])
@@ -183,28 +184,25 @@ class Optimization_algorithm:
         # Number of points per dimension
         if n_each_dim is None:
             n_each_dim=int(maxiter/(loops*dim))
-            n_each_dim=n_each_dim if n_each_dim>1 else 1
+            n_each_dim = max(n_each_dim, 1)
         # Make grid either with the same or different numbers in each dimension
         if isinstance(n_each_dim,int):
             n_each_dim=[n_each_dim]*dim
         if sum(n_each_dim)*loops>maxiter:
             n_each_dim=int(maxiter/(loops*dim))
-            n_each_dim=n_each_dim if n_each_dim>1 else 1
+            n_each_dim = max(n_each_dim, 1)
             n_each_dim=[n_each_dim]*dim
-        
+
         # Set the calculator up 
         args=(GP,parameters,X_tr,Y_tr,prior,False,dis_m)
         sol={'fun':fun(theta,*args),'x':theta,'success':False}
         i=1
         # Calculate the line points
-        for l in range(int(loops)):
+        for _ in range(int(loops)):
             for d in range(dim):
                 for t in np.linspace(bounds[d][0],bounds[d][1],n_each_dim[d]+2)[1:-1]:
                     theta_r=sol['x'].copy()
-                    if log:
-                        theta_r[d]=t
-                    else:
-                        theta_r[d]=np.exp(t)
+                    theta_r[d] = t if log else np.exp(t)
                     f=fun(theta_r,*args)
                     if f<sol['fun']:
                         sol['fun']=f
@@ -214,7 +212,7 @@ class Optimization_algorithm:
 
         # Local optimize the best point if wanted
         local_maxiter=int(maxiter-i)
-        local_maxiter=0 if local_maxiter<0 else local_maxiter
+        local_maxiter = max(local_maxiter, 0)
         min_opt=self.minimizer_method(fun,GP,parameters,X_tr,Y_tr,maxiter=local_maxiter,prior=prior,dis_m=dis_m,options=options,**kwargs)
         if optimize:
             mopt=min_opt(sol['x'])
@@ -230,9 +228,8 @@ class Optimization_algorithm:
         dim=len(parameters)
         if not log:
             bounds=np.log(bounds)
-        
-        if npoints>maxiter:
-            npoints=maxiter
+
+        npoints = min(npoints, maxiter)
         if nopt is None:
             nopt=npoints
 
@@ -250,7 +247,7 @@ class Optimization_algorithm:
             if log:
                 theta_best=np.log(theta_best)
             theta_r=np.append(theta_r,[theta_best],axis=0)
-            
+
         # Randomly draw hyperparameters
         if npts_ini>0:
             theta_new=np.random.uniform(low=bounds[:,0],high=bounds[:,1],size=(npts_ini,dim))
@@ -272,12 +269,11 @@ class Optimization_algorithm:
 
         # Local optimize the lowest object function values
         for t in theta_r[sort_min]:
-            if i<maxiter:
-                local_maxiter=int(maxiter-i)
-                local_maxiter=0 if local_maxiter<0 else local_maxiter
-                min_opt=self.minimizer_method(fun,GP,parameters,X_tr,Y_tr,maxiter=local_maxiter,prior=prior,jac=jac,dis_m=dis_m,**kwargs)
-            else:
+            if i >= maxiter:
                 break
+            local_maxiter=int(maxiter-i)
+            local_maxiter = max(local_maxiter, 0)
+            min_opt=self.minimizer_method(fun,GP,parameters,X_tr,Y_tr,maxiter=local_maxiter,prior=prior,jac=jac,dis_m=dis_m,**kwargs)
             mopt=min_opt(t)
             if mopt['fun']<=sol['fun']:
                 sol=mopt
@@ -312,7 +308,7 @@ class Optimization_algorithm:
         else:
             args=(GP,parameters,X_tr,Y_tr,prior,jac,dis_m)
         options['maxiter']=int(maxiter/niter)
-        
+
         method=method.lower()
         # Set the local optimizer parameter
         if method=='slsqp':
@@ -327,10 +323,16 @@ class Optimization_algorithm:
             minimizer_kwargs={'method':method,'args':args,'constraints':constraints,'tol':tol,'options':options}
         else:
             minimizer_kwargs={'method':method,'args':args,'jac':jac,'tol':tol,'options':options}
-        
-        # Do the basin-hopping
-        sol=basinhopping(fun,x0=theta,niter=niter,minimizer_kwargs=minimizer_kwargs,interval=interval,T=T,stepsize=stepsize)
-        return sol
+
+        return basinhopping(
+            fun,
+            x0=theta,
+            niter=niter,
+            minimizer_kwargs=minimizer_kwargs,
+            interval=interval,
+            T=T,
+            stepsize=stepsize,
+        )
 
     def guess_driven(self,fun,GP,X_tr,Y_tr,theta,parameters,bounds,maxiter=5000,log=True,prior=None,dis_m=None,npoints=4,restart=1,options={},method='TNC',jac=True,get_ed_guess=True,early_stop=True,random_var=0.01,dis_min=False,**kwargs):
         " Educated guess driven approach where the intial set and the best guess of the hyperparameters are used. Furtheremore, pseudo-random points are also used. Restarts are also performed"
@@ -364,11 +366,11 @@ class Optimization_algorithm:
             theta_r2=[np.linspace(bounds[p][0],bounds[p][1],npts_extra+2)[1:-1] for p in range(dim)]
             theta_r2=self.make_grid(theta_r2,npts_ini)
             theta_r=np.append(theta_r,theta_r2,axis=0)
-        
+
         if not log:
             if len(theta_r)>1:
                 theta_r[1:]=np.exp(theta_r[1:])
-        
+
         args=(GP,parameters,X_tr,Y_tr,prior,False,dis_m)
 
         # Calculate object functions of all stationary hyperparameters
@@ -377,20 +379,19 @@ class Optimization_algorithm:
         i_min=np.argmin(f_list[0])
         sol={'fun':f_list[0][i_min],'x':theta_list[i_min],'success':False}
         nfev=len(f_list[0])
-        
+
         method=method.lower()
         # Set up local optimizer
         min_opt=self.minimizer_method(fun,GP,parameters,X_tr,Y_tr,method=method,maxiter=maxiter,prior=prior,jac=jac,dis_m=dis_m,**kwargs)
-        
+
         # Run the local optimization with restarts and perturbations
         for r in range(restart+1):
-            if nfev<maxiter:
-                local_maxiter=int((maxiter-nfev)/len(theta_r))
-                local_maxiter=0 if local_maxiter<0 else local_maxiter
-                min_opt=self.minimizer_method(fun,GP,parameters,X_tr,Y_tr,method=method,maxiter=local_maxiter,prior=prior,jac=jac,dis_m=dis_m,**kwargs)
-            else:
+            if nfev >= maxiter:
                 break
 
+            local_maxiter=int((maxiter-nfev)/len(theta_r))
+            local_maxiter = max(local_maxiter, 0)
+            min_opt=self.minimizer_method(fun,GP,parameters,X_tr,Y_tr,method=method,maxiter=local_maxiter,prior=prior,jac=jac,dis_m=dis_m,**kwargs)
             sol_list=[min_opt(t) for t in theta_r]
             s_nfev,sol_f,sol_x=[[s[key] for s in sol_list] for key in ['nfev','fun','x']]
             nfev+=np.nansum(s_nfev)
@@ -400,7 +401,7 @@ class Optimization_algorithm:
 
             theta_list=np.append(theta_list,sol_x,axis=0)
             f_list.append(sol_f)
-            
+
             if early_stop:
                 if np.sum(np.isclose(sol_f,sol['fun'],atol=1e-8))==npoints and npoints>1:
                     if dis_min:
@@ -410,17 +411,16 @@ class Optimization_algorithm:
                     else:
                         sol['success']=True
                         break
-            
+
             if r>0 and r<restart:
                 indicies=np.isclose(sol_f,f_list[-2])
-                fix_p=sum(indicies)
-                if fix_p:
+                if fix_p := sum(indicies):
                     rand_c=np.random.uniform(low=1-random_var,high=1+random_var,size=(fix_p,fix_p,1))/fix_p
                     if log:
                         theta_r[indicies]=np.nansum(abs(theta_r[indicies])*rand_c,axis=1)
                     else:
                         theta_r[indicies]=np.exp(np.nansum(np.log(abs(theta_r[indicies]))*rand_c,axis=1))
-        
+
         # Fraction of optimal hyperparameters that have same values and are close
         f_list=np.array(f_list).reshape(-1)
         index_min=np.where(np.isclose(f_list,sol['fun'],atol=1e-3,rtol=1e-3))[0]

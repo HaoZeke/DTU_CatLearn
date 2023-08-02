@@ -127,7 +127,7 @@ def connection_dict(atoms, periodic=False, dx=0.2, neighbor_number=1,
         nl = _get_neighborlist(atoms, dx=dx)
 
     # Pad neighborlist with negative one.
-    mlen = max([len(n) for n in nl.values()])
+    mlen = max(len(n) for n in nl.values())
     for i in nl:
         if len(nl[i]) < mlen:
             nl[i] += [-1] * (mlen - len(nl[i]))
@@ -151,13 +151,8 @@ def property_matrix(atoms, property):
         data = json.load(f)
 
     an = atoms.get_atomic_numbers()
-    atomic_prop = {}
-    for a in set(an):
-        atomic_prop[a] = data[str(a)].get(property)
-
-    prop_x = []
-    for a in an:
-        prop_x.append(atomic_prop[a])
+    atomic_prop = {a: data[str(a)].get(property) for a in set(an)}
+    prop_x = [atomic_prop[a] for a in an]
     prop_mat = [prop_x] * len(atoms)
 
     return np.asarray(np.float64(prop_mat))
@@ -319,10 +314,7 @@ def _get_features(an, conn_mat, sum_cm, gen_mat):
     for e in set(an):
         el = _element_list(an, e)
         x = np.array(sum_cm) * np.array(el)
-        feature.append(np.sum(x))
-        feature.append(np.sum(x ** 2))
-        feature.append(np.sum(x ** 0.5))
-
+        feature.extend((np.sum(x), np.sum(x ** 2), np.sum(x ** 0.5)))
         # Get level two fingerprint. Total AA, AB, BB etc bonds.
         pt = np.array(([el] * len(an)))
         em = np.sum(np.sum(pt * np.array(conn_mat), axis=1))
@@ -337,8 +329,5 @@ def _get_features(an, conn_mat, sum_cm, gen_mat):
 
         # Get level three fingerprint. Generalized coordination number.
         x = np.array(gen_mat) * np.array(el)
-        feature.append(np.sum(x))
-        feature.append(np.sum(x ** 2))
-        feature.append(np.sum(x ** 0.5))
-
+        feature.extend((np.sum(x), np.sum(x ** 2), np.sum(x ** 0.5)))
     return feature

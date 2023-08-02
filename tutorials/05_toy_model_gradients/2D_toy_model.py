@@ -42,10 +42,7 @@ for i in range(len(trainx)):
 train = np.array(train)
 train = np.append(train, ([[0.0, 0.0]]), axis=0)
 
-# Call the underlying function to produce the target values.
-target = []
-for i in train:
-    target.append([afunc(i[0], i[1])[0]])
+target = [[afunc(i[0], i[1])[0]] for i in train]
 target = np.array(target)
 
 # Generate test datapoints in x and y.
@@ -65,10 +62,7 @@ org_train = train.copy()
 org_target = target.copy()
 org_test = test.copy()
 
-# Call the underlying function to produce the gradients of the target values.
-gradients = []
-for i in org_train:
-    gradients.append(afunc(i[0], i[1])[1:3])
+gradients = [afunc(i[0], i[1])[1:3] for i in org_train]
 org_gradients = np.asarray(gradients)
 gradients = org_gradients
 

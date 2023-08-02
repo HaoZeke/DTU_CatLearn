@@ -16,8 +16,6 @@ wkdir = os.getcwd()
 
 def predict(train_features, train_targets, test_features, test_targets):
     """Function to perform the prediction."""
-    data = {}
-
     # Set up the ridge regression function.
     rr = RidgeRegression(W2=None, Vh=None, cv='loocv')
     b = rr.find_optimal_regularization(X=train_features, Y=train_targets)
@@ -33,10 +31,7 @@ def predict(train_features, train_targets, test_features, test_targets):
         err.append(e)
     error = (sumd / len(test_features)) ** 0.5
 
-    data['result'] = error
-    data['size'] = len(train_targets)
-
-    return data
+    return {'result': error, 'size': len(train_targets)}
 
 
 class TestValidation(unittest.TestCase):
@@ -47,8 +42,7 @@ class TestValidation(unittest.TestCase):
         # Define the hierarchy cv class method.
         train_features, train_targets, test_features, test_targets = get_data()
 
-        hv = Hierarchy(
-            db_name='{}/test.sqlite'.format(wkdir), file_name='hierarchy')
+        hv = Hierarchy(db_name=f'{wkdir}/test.sqlite', file_name='hierarchy')
         hv.todb(features=train_features, targets=train_targets)
         # Split the data into subsets.
         split = hv.split_index(min_split=5, max_split=25)

@@ -45,13 +45,8 @@ class RidgeRegression(object):
             coefficients = self.get_coefficients(train_targets=train_targets,
                                                  train_features=train_matrix,
                                                  reg=reg, p=p)['coef']
-        validation = []
-        prediction = []
-        for vec in train_matrix:
-            validation.append(np.dot(coefficients, vec))
-        for vec in test_matrix:
-            prediction.append(np.dot(coefficients, vec))
-
+        validation = [np.dot(coefficients, vec) for vec in train_matrix]
+        prediction = [np.dot(coefficients, vec) for vec in test_matrix]
         return validation, prediction
 
     def get_coefficients(self, train_targets, train_features, reg=None, p=0.):
@@ -112,8 +107,7 @@ class RidgeRegression(object):
         whigh, wlow = np.log(self.W2[0] * 2.), np.log(self.W2[-1] * 0.5)
         basesearchwidth = whigh - wlow
         omega2_range = [1e-6 * np.exp(wlow)]
-        for pp in np.linspace(wlow, whigh, self.wsteps):
-            omega2_range.append(np.exp(pp))
+        omega2_range.extend(np.exp(pp) for pp in np.linspace(wlow, whigh, self.wsteps))
         omega2_range.append(1e6 * np.exp(whigh))
 
         # Find best value by successively reducing seach area for omega2.
@@ -138,10 +132,7 @@ class RidgeRegression(object):
             wlow = logmin_epe - basesearchwidth * 0.5
             whigh = logmin_epe + basesearchwidth * 0.5
 
-            omega2_range = []
-            for pp in np.linspace(wlow, whigh, self.wsteps):
-                omega2_range.append(np.exp(pp))
-
+            omega2_range = [np.exp(pp) for pp in np.linspace(wlow, whigh, self.wsteps)]
         return omega2_min
 
     def regularization(self, train_targets, train_features, coef=None,
@@ -231,9 +222,7 @@ class RidgeRegression(object):
         R2 = np.ones(len(W2)) * omega2
         inv_W2_reg = (W2 + R2) ** -1
         XtX_reg_inv = np.dot(np.dot(Vh.T, np.diag(inv_W2_reg)), Vh)
-        coefs = np.dot(XtX_reg_inv, np.dot(X.T, Y.T) + omega2 * p)
-
-        return coefs
+        return np.dot(XtX_reg_inv, np.dot(X.T, Y.T) + omega2 * p)
 
     def _bootstrap_master(self, X, Y, p, omega2_l, Ns):
         """Function to perform the bootstrapping.
@@ -352,9 +341,7 @@ class RidgeRegression(object):
             nsi = np.delete(np.arange(Ns), si)
             error_nsi = error_samples.take(nsi, axis=0).take([i], axis=1)
             ERRi_list[i] = np.mean(error_nsi**2)
-        ERR = np.mean(ERRi_list)
-
-        return ERR
+        return np.mean(ERRi_list)
 
     def _get_samples_svd(self, X, samples):
         """Get SVD for given sample in bootstrap.
@@ -400,10 +387,7 @@ class RidgeRegression(object):
         """
         for i, omega2 in enumerate(omega2_l):
             LOOCV_EPE = self._LOOCV(X, Y, p, omega2, U, W)
-            if i == 0:
-                LOOCV_EPE_l = LOOCV_EPE
-            else:
-                LOOCV_EPE_l = np.hstack((LOOCV_EPE_l, LOOCV_EPE))
+            LOOCV_EPE_l = LOOCV_EPE if i == 0 else np.hstack((LOOCV_EPE_l, LOOCV_EPE))
         return LOOCV_EPE_l
 
     def _LOOCV(self, X, Y, p, omega2, U, W):

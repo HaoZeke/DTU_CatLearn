@@ -22,9 +22,7 @@ class Boundary_conditions:
             bounds=self.create_restricted(GP,X,Y,parameters,fun_name)
         elif self.bound_type=='educated':
             bounds=self.create_educated(GP,X,Y,parameters,fun_name)
-        if log:
-            return np.log(bounds)
-        return bounds
+        return np.log(bounds) if log else bounds
 
     def create_no(self,parameters):
         " Create the boundary condition, where no information is known "
@@ -57,8 +55,7 @@ class Boundary_conditions:
                         else:
                             bounds.append([eps_mach_lower,1/eps_mach_lower])
                 else:
-                    for d in range(l_count):
-                        bounds.append([eps_mach_lower,1/eps_mach_lower])
+                    bounds.extend([eps_mach_lower,1/eps_mach_lower] for _ in range(l_count))
             else:
                 bounds.append([eps_mach_lower,1/eps_mach_lower])
         bounds=np.array(bounds)
@@ -73,7 +70,7 @@ class Boundary_conditions:
         parameters_set=sorted(list(set(parameters)))
         bounds=[]
         for para in parameters_set:
-            if para=='length':
+            if para == 'length':
                 if 'SE' in str(GP.kernel):
                     exp_lower,exp_max=-1/np.log(np.finfo(float).eps),-1/np.log(1-np.finfo(float).eps)
                     if l_count>1:
@@ -92,9 +89,8 @@ class Boundary_conditions:
                         else:
                             bounds.append([eps_mach_lower,1/eps_mach_lower])
                 else:
-                    for d in range(l_count):
-                        bounds.append([eps_mach_lower,1/eps_mach_lower])
-            elif para=='noise':
+                    bounds.extend([eps_mach_lower,1/eps_mach_lower] for _ in range(l_count))
+            elif para == 'noise':
                 if fun_name in ['mnll','mnlp']:
                     bounds.append([eps_mach_lower,1.0])
                 else:
@@ -119,16 +115,15 @@ class Boundary_conditions:
         parameters_set=sorted(list(set(parameters)))
         bounds=[]
         for para in parameters_set:
-            if para=='alpha':
+            if para == 'alpha':
                 bounds.append(ed_guess.alpha_bound(X,Y,scale=self.scale))
-            elif para=='length':
+            elif para == 'length':
                 l_bound=ed_guess.length_bound(X,Y,scale=self.scale)
                 if l_count>1:
-                    for d in range(l_count):
-                        bounds.append(l_bound[d])
+                    bounds.extend(l_bound[d] for d in range(l_count))
                 else:
                     bounds.append(l_bound)
-            elif para=='noise':
+            elif para == 'noise':
                 bounds.append(ed_guess.noise_bound(X,Y,scale=self.scale))
             else:
                 bounds.append([eps_mach_lower,1/eps_mach_lower])

@@ -31,7 +31,7 @@ class feature_selection(object):
         feat_vec, alpha_vec, _ = self.feature_inspection()
         selected_features = OrderedDict()
         for feat in range(1, np.shape(self.train_features)[-1] + 1):
-            if select_limit[0] < feat and feat < select_limit[1]:
+            if select_limit[0] < feat < select_limit[1]:
                 splits = 10
                 found_alpha = False
                 int_expand = 0
@@ -43,17 +43,16 @@ class feature_selection(object):
                         _, _, feature_index = self.feature_inspection(
                             alpha_list=[alpha])
                         selected_features[str(feat)] = feature_index
-                    else:
-                        if int_expand < 1:
-                            feat_vec, alpha_vec, splits, int_expand =\
+                    elif int_expand < 1:
+                        feat_vec, alpha_vec, splits, int_expand =\
                                 self.interval_modifier(feat_vec, alpha_vec,
-                                                       feat, splits,
-                                                       int_expand)
-                            feat_vec, alpha_vec, _ = self.feature_inspection(
-                                upper=alpha_vec[0],
-                                interval=splits)
-                        else:
-                            found_alpha = True
+                                                   feat, splits,
+                                                   int_expand)
+                        feat_vec, alpha_vec, _ = self.feature_inspection(
+                            upper=alpha_vec[0],
+                            interval=splits)
+                    else:
+                        found_alpha = True
         return selected_features
 
     def feature_inspection(self, lower=0, upper=1, interval=10**2,
@@ -124,7 +123,7 @@ class feature_selection(object):
         if index > 2:
             feat_vec = feat_vec[index - 3:]
             alpha_vec = alpha_vec[index - 3:]
-        if index - 1 < 3:
+        if index < 4:
             splits = 2 * splits
             int_expand += 1
         return feat_vec, alpha_vec, splits, int_expand
@@ -149,7 +148,7 @@ class feature_selection(object):
            How many times alpha the upper
            limit should be.
         """
-        for steps in range(1, refsteps + 1):
+        for _ in range(1, refsteps + 1):
             feat_vec, alpha_vec, _ = self.feature_inspection(
                 upper=upper * alpha, lower=alpha, interval=splits
             )

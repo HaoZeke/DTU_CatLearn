@@ -102,13 +102,12 @@ class BulkFingerprintGenerator(BaseGenerator):
                     'ne_f_sum',
                     'ionenergy_sum',
                     'ground_state_magmom_sum']
-        else:
-            numbers = atoms.get_atomic_numbers()
-            dat = list_mendeleev_params(numbers, params=default_params +
-                                        self.extra_params)
-            result = list(np.nansum(dat, axis=0))
-            result += [np.nansum([gs_magmom[z] for z in numbers])]
-            return result
+        numbers = atoms.get_atomic_numbers()
+        dat = list_mendeleev_params(numbers, params=default_params +
+                                    self.extra_params)
+        result = list(np.nansum(dat, axis=0))
+        result += [np.nansum([gs_magmom[z] for z in numbers])]
+        return result
 
     def bulk_average(self, atoms=None):
         """Return a fingerprint vector with propeties of the element name
@@ -160,13 +159,12 @@ class BulkFingerprintGenerator(BaseGenerator):
                     'ne_f_av',
                     'ionenergy_av',
                     'ground_state_magmom_av']
-        else:
-            numbers = atoms.get_atomic_numbers()
-            dat = list_mendeleev_params(numbers, params=default_params +
-                                        self.extra_params)
-            result = list(np.nanmean(dat, axis=0))
-            result += [np.nanmean([gs_magmom[z] for z in numbers])]
-            return result
+        numbers = atoms.get_atomic_numbers()
+        dat = list_mendeleev_params(numbers, params=default_params +
+                                    self.extra_params)
+        result = list(np.nanmean(dat, axis=0))
+        result += [np.nanmean([gs_magmom[z] for z in numbers])]
+        return result
 
     def bulk_std(self, atoms=None):
         """Return a fingerprint vector with propeties of the element name
@@ -218,16 +216,12 @@ class BulkFingerprintGenerator(BaseGenerator):
                     'ne_f_std',
                     'ionenergy_std',
                     'ground_state_magmom_std']
-        else:
-            numbers = atoms.get_atomic_numbers()
-            dat = list_mendeleev_params(numbers, params=default_params +
-                                        self.extra_params)
-            result = list(np.nanstd(dat, axis=0))
-            result += [np.nanstd([gs_magmom[z] for z in numbers])]
-            return result
+        numbers = atoms.get_atomic_numbers()
+        dat = list_mendeleev_params(numbers, params=default_params +
+                                    self.extra_params)
+        result = list(np.nanstd(dat, axis=0))
+        result += [np.nanstd([gs_magmom[z] for z in numbers])]
+        return result
 
     def xyz_id(self, atoms=None):
-        if atoms is None:
-            return ['xyz_id']
-        else:
-            return [atoms.info['xyz_id']]
+        return ['xyz_id'] if atoms is None else [atoms.info['xyz_id']]

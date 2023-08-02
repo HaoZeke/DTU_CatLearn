@@ -35,7 +35,7 @@ class TestAdsorbateFeatures(unittest.TestCase):
             symbols = symbols[:n]
             adsorbates = adsorbates[:n]
         images = []
-        for i, s in enumerate(symbols):
+        for s in symbols:
             rs = get_radius(atomic_numbers[s])
             a = 2 * rs * 2 ** 0.5
             for ads in adsorbates:
@@ -51,7 +51,7 @@ class TestAdsorbateFeatures(unittest.TestCase):
         """Test the feature generation."""
         images = self.setup_metals()
         images = autogen_info(images)
-        print(str(len(images)) + ' training examples.')
+        print(f'{len(images)} training examples.')
         gen = FeatureGenerator(nprocs=1)
         train_fpv = default_fingerprinters(gen, 'adsorbates')
         train_fpv += [gen.formal_charges,
@@ -75,7 +75,7 @@ class TestAdsorbateFeatures(unittest.TestCase):
                        a.z < atoms.cell[2, 2] / 2. + 0.1]
             atoms.set_constraint(FixAtoms(c_atoms))
         images = autogen_info(images)
-        print(str(len(images)) + ' training examples.')
+        print(f'{len(images)} training examples.')
         gen = FeatureGenerator(nprocs=1)
         train_fpv = default_fingerprinters(gen, 'adsorbates')
         matrix = gen.return_vec(images, train_fpv)
@@ -93,7 +93,7 @@ class TestAdsorbateFeatures(unittest.TestCase):
         images = autogen_info(images)
         layers2ads_index(images[0],
                          images[0].info['key_value_pairs']['species'])
-        print(str(len(images)) + ' training examples.')
+        print(f'{len(images)} training examples.')
         gen = FeatureGenerator(nprocs=1)
         train_fpv = default_fingerprinters(gen, 'adsorbates')
         # Test db specific functions.

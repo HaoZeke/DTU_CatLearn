@@ -62,7 +62,15 @@ class LOO(Object_functions):
             KXX_inv,K_inv_diag,coef,co_Kinv=self.get_co_Kinv(L,low,n_data,coef)
             prefactor2=np.mean(co_Kinv*coef)-(np.mean(coef/np.sqrt(K_inv_diag))**2)
             hp.update(dict(prefactor=np.array([0.5*np.log(prefactor2)])))
-            sol['x']=np.array(sum([list(np.array(hp[para]).reshape(-1)) for para in parameters_set],[]))
+            sol['x'] = np.array(
+                sum(
+                    (
+                        list(np.array(hp[para]).reshape(-1))
+                        for para in parameters_set
+                    ),
+                    [],
+                )
+            )
             sol['nfev']+=1
         sol['hp']=hp.copy()
         sol['GP']=self.update(GP,hp)

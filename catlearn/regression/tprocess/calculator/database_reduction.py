@@ -60,7 +60,7 @@ class Database_Reduction(Database):
     def reduction_distances(self,all_indicies,features):
         " Reduce the training set with the points farthest from each other. "
         indicies=np.array([0,1])
-        for i in range(2,self.npoints):
+        for _ in range(2,self.npoints):
             not_indicies=[j for j in all_indicies if j not in indicies]
             dist=cdist(features[indicies],features[not_indicies])
             i_max=np.argmax(np.nanmin(dist,axis=0))
@@ -88,13 +88,13 @@ class Database_Reduction(Database):
 
     def reduction_min(self):
         " Use the targets with smallest norms in the training set. "
-        indicies=np.argsort(np.linalg.norm(np.array(self.targets),axis=1))[:int(self.npoints)]
-        return indicies
+        return np.argsort(np.linalg.norm(np.array(self.targets), axis=1))[
+            : int(self.npoints)
+        ]
 
     def reduction_last(self,all_indicies):
         " Use the targets with smallest norms in the training set. "
-        indicies=np.append(all_indicies[:2],all_indicies[-int(self.npoints-2):])
-        return indicies
+        return np.append(all_indicies[:2],all_indicies[-int(self.npoints-2):])
     
     def get_atoms(self):
         " Get the list of atoms in the database. "
@@ -113,7 +113,7 @@ class Database_Reduction(Database):
     
     def __repr__(self):
         if self.use_derivatives:
-            return "Database_Reduction({} Atoms objects without forces)".format(len(self.atoms_list))
-        return "Database_Reduction({} Atoms objects with forces)".format(len(self.atoms_list))
+            return f"Database_Reduction({len(self.atoms_list)} Atoms objects without forces)"
+        return f"Database_Reduction({len(self.atoms_list)} Atoms objects with forces)"
     
     

@@ -37,7 +37,7 @@ def style_check():
         if not os.path.exists(filepath):
             os.makedirs(filepath)
         with open(filename, 'w') as f:
-            system('git', 'show', ':' + name, stdout=f)
+            system('git', 'show', f':{name}', stdout=f)
 
     args = ['pycodestyle']
     if select_codes and ignore_codes:

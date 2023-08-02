@@ -8,7 +8,7 @@ def interpolation_ts(start,end,ts,n_images=15,interpolation='linear',mic=True,**
     images=make_interpolation(ts,end,n_images=n_images,interpolation=interpolation,mic=mic,**interpolation_kwargs)
     dis_et=get_images_distance(images)
     n_images_st=int(n_images*dis_st/(dis_st+dis_et))
-    n_images_st=2 if n_images_st<2 else n_images_st
+    n_images_st = max(n_images_st, 2)
     images=make_interpolation(start,ts,n_images=n_images_st,interpolation=interpolation,mic=mic,**interpolation_kwargs)
     images=images+make_interpolation(ts,end,n_images=int(n_images-n_images_st+1),interpolation=interpolation,mic=mic,**interpolation_kwargs)[1:]
     return images
@@ -16,7 +16,7 @@ def interpolation_ts(start,end,ts,n_images=15,interpolation='linear',mic=True,**
 def make_interpolation(start,end,n_images=15,interpolation='linear',mic=True,**interpolation_kwargs):
     " Make the NEB interpolation path. "
     # Make path by the NEB methods interpolation
-    images=[start.copy() for i in range(n_images-1)]+[end.copy()]
+    images = [start.copy() for _ in range(n_images-1)] + [end.copy()]
     neb=NEB(images)
     if interpolation=='linear':
         neb.interpolate(mic=mic,**interpolation_kwargs)

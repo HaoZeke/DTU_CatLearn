@@ -71,9 +71,7 @@ class Distance_matrix_per_dimension(Distance_matrix):
             if axis==0:
                 return 2.0*np.sum([distances[d]*fp_deriv[:,d:d+1] for d in range(len(distances))],axis=0)
             return (-2.0)*np.sum([distances[d]*fp_deriv[:,d] for d in range(len(distances))],axis=0)
-        if axis==0:
-            return 2.0*distances[d1]
-        return (-2.0)*distances[d1]
+        return 2.0*distances[d1] if axis==0 else (-2.0)*distances[d1]
     
     def get_hessian(self,features,features2,distances,d1,d2):
         " Get the hessian of the distance matrix wrt the features/fingerprint "

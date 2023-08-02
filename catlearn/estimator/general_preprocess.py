@@ -31,15 +31,14 @@ class GeneralPrepreprocess(object):
         test_features : array
             The array of test features.
         """
-        if self.clean_type is 'eliminate':
-            train_features, train_targets, test_features = \
-                self._eliminate_cleaner(
-                    train_features, train_targets, test_features)
-            if len(train_features) == 0:
-                raise AssertionError("All features has been eliminated.")
-        else:
+        if self.clean_type is not 'eliminate':
             raise NotImplementedError
 
+        train_features, train_targets, test_features = \
+                self._eliminate_cleaner(
+                train_features, train_targets, test_features)
+        if len(train_features) == 0:
+            raise AssertionError("All features has been eliminated.")
         train_features, test_features = self._standardize_scalar(
             train_features, test_features)
 
@@ -70,10 +69,7 @@ class GeneralPrepreprocess(object):
         if self.clean_type is 'eliminate':
             processed = features[:, self.clean_index]
 
-        # Scale the features.
-        processed = (processed - self.scale_mean) / self.scale_std
-
-        return processed
+        return (processed - self.scale_mean) / self.scale_std
 
     def _eliminate_cleaner(self, train_features, train_targets, test_features):
         """Function to remove data missing or useless.

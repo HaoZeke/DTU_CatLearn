@@ -46,14 +46,26 @@ class FBPMGP:
         gp=copy.deepcopy(GP)
         # Whether to use distance matrix
         dis_m=gp.kernel.distances(X) if self.distance_matrix else None
-        sol=self.fbpmgp(theta,GP,parameters,X,Y,prior=prior,dis_m=dis_m,Q=self.Q,ngrid=self.ngrid,use_bounds=self.use_bounds)
-        return sol
+        return self.fbpmgp(
+            theta,
+            GP,
+            parameters,
+            X,
+            Y,
+            prior=prior,
+            dis_m=dis_m,
+            Q=self.Q,
+            ngrid=self.ngrid,
+            use_bounds=self.use_bounds,
+        )
     
     def hp_to_theta(self,hp):
-        " Transform a dictionary of hyperparameters to a list of values and a list of parameter categories " 
+        " Transform a dictionary of hyperparameters to a list of values and a list of parameter categories "
         parameters_set=sorted(set(hp.keys()))
         theta=[list(np.array(hp[para]).reshape(-1)) for para in parameters_set]
-        parameters=sum([[para]*len(theta[p]) for p,para in enumerate(parameters_set)],[])
+        parameters = sum(
+            ([para] * len(theta[p]) for p, para in enumerate(parameters_set)), []
+        )
         theta=np.array(sum(theta,[]))
         return theta,parameters
         
@@ -134,35 +146,34 @@ class FBPMGP:
         " Make a grid for each hyperparameter in the variable transformed space "
         hyper_var=Variable_Transformation().transf_para(parameters_set,GP,X,Y,use_bounds=use_bounds)
         dl=np.finfo(float).eps
-        grids={}
-        for para,pbool in para_bool.items():
-            if pbool:
-                grids[para]=hyper_var.transform_t_to_hyper(np.linspace(0.0+dl,1.0-dl,ngrid),para)
-            else:
-                grids[para]=np.array([GP.hp['prefactor'].item(0)])
-        return grids
+        return {
+            para: hyper_var.transform_t_to_hyper(
+                np.linspace(0.0 + dl, 1.0 - dl, ngrid), para
+            )
+            if pbool
+            else np.array([GP.hp['prefactor'].item(0)])
+            for para, pbool in para_bool.items()
+        }
     
     def trapz_coef(self,grids,para_bool):
         " Make the weights for the weighted averages from the trapezoidal rule "
-        cs={}
-        for para,pbool in para_bool.items():
-            if pbool:
-                cs[para]=np.log(self.trapz_append(grids[para]))
-            else:
-                cs[para]=np.array([0.0])
-        return cs
+        return {
+            para: np.log(self.trapz_append(grids[para]))
+            if pbool
+            else np.array([0.0])
+            for para, pbool in para_bool.items()
+        }
     
     def prior_grid(self,grids,prior=None,i=0):
         " Get prior distribution of hyperparameters on the grid "
         if prior is None:
             return {para:np.array([0.0]*len(grid)) for para,grid in grids.items()}
-        pr_grid={}
-        for para,grid in grids.items():
-            if para in prior.keys():
-                pr_grid[para]=prior[para][i].ln_pdf(grid)
-            else:
-                pr_grid[para]=np.array([0.0]*len(grid))
-        return pr_grid
+        return {
+            para: prior[para][i].ln_pdf(grid)
+            if para in prior.keys()
+            else np.array([0.0] * len(grid))
+            for para, grid in grids.items()
+        }
     
     def get_all_grids(self,parameters_set,GP,X,Y,ngrid=100,use_bounds=True,prior=None):
         " Get the grids in the hyperparameter space, weights from the trapezoidal rule, and prior grid "
@@ -265,10 +276,15 @@ class FBPMGP:
         i_min=np.nanargmin(kl)
         kl_min=kl[i_min]/n_test
         hp_best=dict(length=np.array([df['length'][i_min]]),noise=np.array([df['noise'][i_min]]),prefactor=np.array([0.5*np.log(prefactor[i_min])]))
-        theta=np.array([hp_best[para] for para in hp_best.keys()]).reshape(-1)
-        sol={'fun':kl_min,'hp':hp_best,'x':theta,'nfev':len_l,'success':True}
-        sol['GP']=self.update(GP,hp_best)
-        return sol
+        theta = np.array([hp_best[para] for para in hp_best]).reshape(-1)
+        return {
+            'fun': kl_min,
+            'hp': hp_best,
+            'x': theta,
+            'nfev': len_l,
+            'success': True,
+            'GP': self.update(GP, hp_best),
+        }
     
     def fbpmgp(self,theta,GP,parameters,X,Y,prior=None,dis_m=None,Q=None,ngrid=100,use_bounds=True):
         " Only works with the FBPMGP object function " 

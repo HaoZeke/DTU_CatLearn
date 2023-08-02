@@ -46,10 +46,7 @@ def get_covariance(kernel_list, log_scale, matrix1, matrix2=None,
                 matrix2 = matrix2[:, kdict['features']]
         theta = kdict2list(kdict, n1_D)
         hyperparameters = theta[1]
-        if len(theta[0]) == 0:
-            scaling = 1.0
-        else:
-            scaling = theta[0]
+        scaling = 1.0 if len(theta[0]) == 0 else theta[0]
         if log_scale:
             scaling = np.exp(scaling)
 

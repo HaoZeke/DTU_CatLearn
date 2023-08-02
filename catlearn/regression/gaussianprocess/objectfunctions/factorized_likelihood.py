@@ -77,7 +77,12 @@ class FactorizedLogLikelihood(Object_functions):
         if self.modification:
             prefactor2=(n_data/(n_data-len(sol['x'])))*prefactor2 if n_data-len(sol['x'])>0 else prefactor2
         hp.update(dict(prefactor=np.array([0.5*np.log(prefactor2)]).reshape(-1),noise=np.array([noise]).reshape(-1)))
-        sol['x']=np.array(sum([list(np.array(hp[para]).reshape(-1)) for para in parameters_set],[]))
+        sol['x'] = np.array(
+            sum(
+                (list(np.array(hp[para]).reshape(-1)) for para in parameters_set),
+                [],
+            )
+        )
         sol['hp']=hp.copy()
         sol['GP']=self.update(GP,hp)
         sol['nfev']+=1

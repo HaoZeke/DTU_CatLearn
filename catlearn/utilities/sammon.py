@@ -35,7 +35,4 @@ def sammons_error(original, reduced):
     # Replace NAN values from zero division
     dist_err[np.isnan(dist_err)] = 0.
 
-    # Calculate the actual error.
-    error = (1. / original_tri.sum()) * dist_err.sum()
-
-    return error
+    return (1. / original_tri.sum()) * dist_err.sum()

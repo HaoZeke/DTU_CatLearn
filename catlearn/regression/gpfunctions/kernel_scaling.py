@@ -32,9 +32,7 @@ def kernel_scaling(scale_data, kernel_list, rescale):
             std = std[k['features']]
 
         ktype = k['type']
-        kernel = eval(
-            '_{}_kernel_scale(k, mean, std, rescale)'.format(
-                ktype))
+        kernel = eval(f'_{ktype}_kernel_scale(k, mean, std, rescale)')
         k = kernel
 
     return kernel_list
@@ -54,7 +52,7 @@ def _constant_kernel_scale(kernel, mean, std, rescale):
     rescale : boolean
        Flag for whether to scale or rescale the data.
     """
-    print('{} kernel hyperparameters left unscaled'.format(kernel['type']))
+    print(f"{kernel['type']} kernel hyperparameters left unscaled")
     return kernel
 
 
@@ -93,7 +91,7 @@ def _AA_kernel_scale(kernel, mean, std, rescale):
     rescale : boolean
        Flag for whether to scale or rescale the data.
     """
-    print('{} kernel hyperparameters left unscaled'.format(kernel['type']))
+    print(f"{kernel['type']} kernel hyperparameters left unscaled")
     return kernel
 
 
@@ -111,7 +109,7 @@ def _linear_kernel_scale(kernel, mean, std, rescale):
     rescale : boolean
        Flag for whether to scale or rescale the data.
     """
-    print('{} kernel hyperparameters left unscaled'.format(kernel['type']))
+    print(f"{kernel['type']} kernel hyperparameters left unscaled")
     return kernel
 
 
@@ -129,7 +127,7 @@ def _quadratic_kernel_scale(kernel, mean, std, rescale):
     rescale : boolean
        Flag for whether to scale or rescale the data.
     """
-    print('{} kernel hyperparameters left unscaled'.format(kernel['type']))
+    print(f"{kernel['type']} kernel hyperparameters left unscaled")
     return kernel
 
 
@@ -147,5 +145,5 @@ def _laplacian_kernel_scale(kernel, mean, std, rescale):
     rescale : boolean
        Flag for whether to scale or rescale the data.
     """
-    print('{} kernel hyperparameters left unscaled'.format(kernel['type']))
+    print(f"{kernel['type']} kernel hyperparameters left unscaled")
     return kernel

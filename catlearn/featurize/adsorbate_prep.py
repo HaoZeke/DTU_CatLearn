@@ -50,9 +50,9 @@ def autogen_info(images):
         # Identify slab atoms.
         if 'slab_atoms' not in atoms.subsets:
             atoms.subsets['slab_atoms'] = slab_index(atoms)
-        if not (len(atoms.subsets['slab_atoms']) +
-                len(atoms.subsets['ads_atoms']) ==
-                len(atoms)):
+        if len(atoms.subsets['slab_atoms']) + len(
+            atoms.subsets['ads_atoms']
+        ) != len(atoms):
             raise AssertionError("all atoms must belong to slab or adsorbate.")
 
         # Identify atoms at node distance 0 and 1 from the surface-ads bond.
@@ -163,11 +163,20 @@ def detect_termination(atoms):
         sx, sy = atoms.info['key_value_pairs']['supercell'].split('x')
         sx = int(''.join(i for i in sx if i.isdigit()))
         sy = int(''.join(i for i in sy if i.isdigit()))
-        if int(sx) * int(sy) != len(term):
-            msg = str(len(term)) + ' termination atoms identified.' + \
-                ' ' + atoms.info['key_value_pairs']['facet'] + \
-                ' ' + atoms.info['key_value_pairs']['supercell'] + \
-                '. id=' + str(atoms.info['id'])
+        if sx * sy != len(term):
+            msg = (
+                (
+                    (
+                        (
+                            f'{len(term)} termination atoms identified. '
+                            + atoms.info['key_value_pairs']['facet']
+                        )
+                        + ' '
+                    )
+                    + atoms.info['key_value_pairs']['supercell']
+                )
+                + '. id='
+            ) + str(atoms.info['id'])
             warnings.warn(msg)
     except KeyError:
         pass
@@ -247,9 +256,9 @@ def slab_index(atoms):
             - 'ads_atoms' : list
                 indices of atoms belonging to the adsorbate
     """
-    chemi = [a.index for a in atoms if a.index not in
-             atoms.subsets['ads_atoms']]
-    return chemi
+    return [
+        a.index for a in atoms if a.index not in atoms.subsets['ads_atoms']
+    ]
 
 
 def ads_index(atoms):
@@ -264,9 +273,9 @@ def ads_index(atoms):
             - 'slab_atoms' : list
                 indices of atoms belonging to the adsorbate
     """
-    ads = [a.index for a in atoms if a.index not in
-           atoms.subsets['slab_atoms']]
-    return ads
+    return [
+        a.index for a in atoms if a.index not in atoms.subsets['slab_atoms']
+    ]
 
 
 def sym2ads_index(atoms, ads_syms):
@@ -277,9 +286,7 @@ def sym2ads_index(atoms, ads_syms):
     atoms : object
         An ase atoms object.
     """
-    ads_atoms = [a.index for a in atoms if a.symbol in ads_syms]
-
-    return ads_atoms
+    return [a.index for a in atoms if a.symbol in ads_syms]
 
 
 def connectivity2ads_index(atoms, species):
@@ -322,10 +329,10 @@ def connectivity2ads_index(atoms, species):
         return_counts=True)
     ua_comp, uc_comp = np.unique(composition.sort(), return_counts=True)
     if ua_ads != ua_comp:
-        msg = str(ua_ads) + " != " + str(ua_comp)
+        msg = f"{str(ua_ads)} != {str(ua_comp)}"
         raise AssertionError(msg)
     elif uc_ads != uc_comp:
-        msg = str(uc_ads) + " != " + str(uc_comp)
+        msg = f"{str(uc_ads)} != {str(uc_comp)}"
         raise AssertionError(msg)
 
     return list(np.unique(ads_atoms))
@@ -376,10 +383,10 @@ def slab_positions2ads_index(atoms, slab, species):
         return_counts=True)
     ua_comp, uc_comp = np.unique(composition.sort(), return_counts=True)
     if ua_ads != ua_comp:
-        msg = str(ua_ads) + " != " + str(ua_comp)
+        msg = f"{str(ua_ads)} != {str(ua_comp)}"
         raise AssertionError(msg)
     elif uc_ads != uc_comp:
-        msg = str(uc_ads) + " != " + str(uc_comp)
+        msg = f"{str(uc_ads)} != {str(uc_comp)}"
         raise AssertionError(msg)
 
     return ads_atoms
@@ -536,9 +543,7 @@ def info2primary_index(atoms):
     chemi = list(np.unique(chemi))
     site = list(np.unique(site))
     for j in site:
-        for a_s in slab_atoms:
-            if cm[a_s, j] > 0:
-                ligand.append(a_s)
+        ligand.extend(a_s for a_s in slab_atoms if cm[a_s, j] > 0)
     ligand = [lig for lig in list(np.unique(ligand)) if lig not in site]
     if len(chemi) is 0 or len(site) is 0:
         print(chemi, site, ligand)
@@ -594,13 +599,13 @@ def layers_termination(atoms, miller=(0, 0, 1)):
     try:
         db_layers = atoms.info['key_value_pairs']['layers']
         if db_layers != nlayers:
-            msg = str(db_layers) + ' != ' + str(nlayers)
+            msg = f'{str(db_layers)} != {nlayers}'
             if 'id' in atoms.info:
                 msg += ' id=' + str(atoms.info['id'])
             warnings.warn(msg)
-    except(KeyError):
+    except KeyError:
         if nlayers < 3:
-            msg = 'nlayers = ' + str(nlayers)
+            msg = f'nlayers = {nlayers}'
             if 'id' in atoms.info:
                 msg += ' id=' + str(atoms.info['id'])
             warnings.warn(msg)
@@ -645,9 +650,7 @@ def constraints_termination(atoms):
             term.append(a_s)
     subsurf = []
     for a_b in bulk:
-        for a_t in term:
-            if cm[a_t, a_b] > 0:
-                subsurf.append(a_b)
+        subsurf.extend(a_b for a_t in term if cm[a_t, a_b] > 0)
     subsurf = list(np.unique(subsurf))
     return bulk, term, subsurf
 
@@ -667,28 +670,6 @@ def connectivity_termination(atoms):
             indices of atoms belonging to the slab
     """
     raise NotImplementedError("Todo: identify and remove backside termination")
-    cm = atoms.connectivity.copy()
-    np.fill_diagonal(cm, 0)
-    # List coordination numbers of slab atoms.
-    slab_atoms = atoms.subsets['slab_atoms']
-    coord = np.count_nonzero(cm[slab_atoms, :][:, slab_atoms], axis=1)
-    bulk = []
-    term = []
-    max_coord = np.max(coord)
-    bulk = atoms.subsets['slab_atoms']
-    for j, c in enumerate(coord):
-        a_s = atoms.subsets['slab_atoms'][j]
-        if c >= max_coord - 2:
-            bulk.append(a_s)
-        else:
-            term.append(a_s)
-    subsurf = []
-    for a_b in bulk:
-        for a_t in term:
-            if cm[a_t, a_b] > 0:
-                subsurf.append(a_b)
-    subsurf = list(np.unique(subsurf))
-    return bulk, term, subsurf
 
 
 def auto_layers(atoms, miller=(0, 0, 1)):
@@ -721,8 +702,7 @@ def attach_cations(atoms, anion_number=8):
         Atomic number of the anion of this chalcogenide.
     """
     if anion_number not in atoms.numbers:
-        raise ValueError('Anion ' + chemical_symbols[anion_number] +
-                         'not in atoms')
+        raise ValueError(f'Anion {chemical_symbols[anion_number]}not in atoms')
     atoms.subsets['cation_atoms'] = [a.index for a in atoms if
                                      a.number != anion_number]
     atoms.subsets['anion_atoms'] = [a.index for a in atoms if

@@ -193,13 +193,10 @@ class FeatureGenerator(
             parallel_iterate = pool.map_async(
                 self._get_vec, args, callback=fingerprint_vector.append)
             parallel_iterate.wait()
-            vector = np.asarray(fingerprint_vector)[0]
+            return np.asarray(fingerprint_vector)[0]
         else:
-            for a in tqdm(args):
-                fingerprint_vector.append(self._get_vec(a))
-            vector = np.asarray(fingerprint_vector)
-
-        return vector
+            fingerprint_vector.extend(self._get_vec(a) for a in tqdm(args))
+            return np.asarray(fingerprint_vector)
 
     def return_names(self, vec_names):
         """Function to return a list of feature names.
@@ -352,9 +349,7 @@ class FeatureGenerator(
 
         max_len = 0
         for a in train_candidates:
-            if max_len < len(a):
-                max_len = len(a)
-
+            max_len = max(max_len, len(a))
         self.atom_len = max_len
 
     def get_dataframe(self, candidates, vec_names):

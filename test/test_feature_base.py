@@ -19,7 +19,7 @@ class TestBaseGenerator(unittest.TestCase):
 
     def test_feature_base(self):
         """Test the base feature generator."""
-        gadb = DataConnection('{}/data/gadb.db'.format(wkdir))
+        gadb = DataConnection(f'{wkdir}/data/gadb.db')
         all_cand = gadb.get_all_relaxed_candidates()
 
         f = BaseGenerator()

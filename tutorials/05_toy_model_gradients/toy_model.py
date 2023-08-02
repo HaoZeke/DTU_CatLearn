@@ -43,11 +43,7 @@ org_train = train.copy()
 org_target = target.copy()
 org_test = test.copy()
 
-# Call the underlying function to produce the gradients of the target values.
-
-gradients = []
-for i in org_train:
-    gradients.append(afunc(i)[1])
+gradients = [afunc(i)[1] for i in org_train]
 org_gradients = np.asarray(gradients)
 gradients = org_gradients
 
@@ -93,10 +89,7 @@ print('Gaussian linear regression prediction:', error['absolute_average'])
 linex = np.linspace(0.0, 7.0, test_points)
 linex = np.reshape(linex, (1, np.shape(linex)[0]))
 linex = np.sort(linex)
-liney = []
-for i in linex:
-    liney.append(afunc(i)[0])
-
+liney = [afunc(i)[0] for i in linex]
 fig = plt.figure(figsize=(5, 5))
 
 # Example
@@ -118,9 +111,8 @@ if gradients is not None:
     size_bar_gradients = (np.abs(np.max(linex) - np.min(linex))/2.0)/25.0
 
     def lineary(m, linearx, train, target):
-            """Define some linear function."""
-            lineary = m*(linearx-train)+target
-            return lineary
+        """Define some linear function."""
+        return m*(linearx-train)+target
 
     for i in range(0, np.shape(org_gradients)[0]):
         linearx_i = np.linspace(

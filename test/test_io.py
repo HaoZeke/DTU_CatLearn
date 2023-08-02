@@ -64,8 +64,8 @@ class TestIO(unittest.TestCase):
             np.allclose(pred['validation_error']['rmse_all'],
                         self.original['validation_error']['rmse_all']))
 
-        os.remove('{}/test-model.pkl'.format(wkdir))
-        os.remove('{}/test-model.hdf5'.format(wkdir))
+        os.remove(f'{wkdir}/test-model.pkl')
+        os.remove(f'{wkdir}/test-model.hdf5')
 
     def test_raw(self):
         """Function to test raw data save."""
@@ -81,13 +81,12 @@ class TestIO(unittest.TestCase):
         self.assertTrue(r == regularization)
         for i, kernel in enumerate(kernel_list):
             for key in kernel:
-                if type(kernel[key]) != list and \
-                        type(kernel[key]) != np.ndarray:
+                if type(kernel[key]) not in [list, np.ndarray]:
                     self.assertTrue(klist[i][key] == kernel[key])
                 else:
                     self.assertTrue(np.allclose(klist[i][key],
                                                 kernel[key]))
-        os.remove('{}/train_data.hdf5'.format(wkdir))
+        os.remove(f'{wkdir}/train_data.hdf5')
 
 
 if __name__ == '__main__':

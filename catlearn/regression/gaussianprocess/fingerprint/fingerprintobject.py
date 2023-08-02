@@ -11,10 +11,7 @@ class FingerprintObject:
                     Fingerprint derivative wrt. atoms cartesian coordinates.
         """
         self.vector=vector.copy()
-        if derivative is None:
-            self.derivative=None
-        else:
-            self.derivative=derivative.copy()
+        self.derivative = None if derivative is None else derivative.copy()
     
     def get_vector(self):
         " Get the fingerprint vector "
@@ -22,9 +19,7 @@ class FingerprintObject:
     
     def get_derivatives(self,d=None):
         " Get the derivative of the fingerprint wrt the cartesian coordinates"
-        if d is None:
-            return self.derivative.copy()
-        return self.derivative[:,d].copy()
+        return self.derivative.copy() if d is None else self.derivative[:,d].copy()
     
     def get_derivative_dimension(self):
         " Get the dimensions of the cartesian coordinates used for calculating the derivative "

@@ -44,9 +44,8 @@ class Acquisition():
     def update(self,mode):
         self.mode=mode.lower()
         acq={'energy':self.ener, 'uncertainty':self.unc, 'ucb':self.ucb, 'lcb':self.lcb, \
-                'ue':self.ue, 'ume':self.ume, 'umue':self.umue, 'sume':self.sume, 'umucb':self.umucb, 'umlcb':self.umlcb}
+                    'ue':self.ue, 'ume':self.ume, 'umue':self.umue, 'sume':self.sume, 'umucb':self.umucb, 'umlcb':self.umlcb}
         self.calculate=acq[self.mode]
-        pass
 
     def choose(self,candidates):
         " Sort a list of acquisition function values "
@@ -78,15 +77,11 @@ class Acquisition():
 
     def ue(self,energy,uncertainty=None):
         " Predicted uncertainty every second time else predicted energy "
-        if self.iter%2==0:
-            return uncertainty
-        return energy
+        return uncertainty if self.iter%2==0 else energy
 
     def ume(self,energy,uncertainty=None):
         " Predicted uncertainty when it is is larger than unc_convergence else predicted energy "
-        if np.max([uncertainty])<self.unc_convergence:
-            return energy
-        return uncertainty
+        return energy if np.max([uncertainty])<self.unc_convergence else uncertainty
 
     def umue(self,energy,uncertainty=None):
         " Predicted uncertainty when it is is larger than unc_convergence else 'ue' "

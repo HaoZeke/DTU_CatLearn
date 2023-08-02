@@ -40,8 +40,10 @@ def k_fold(features, targets=None, nsplit=3, fix_size=None):
     np.random.shuffle(X)  # Shuffle ordering of the array along 0 axis.
 
     if fix_size is not None:
-        msg = 'Cannot divide dataset in this way, number of candidates is '
-        msg += 'too small'
+        msg = (
+            'Cannot divide dataset in this way, number of candidates is '
+            + 'too small'
+        )
         assert np.shape(X)[0] >= nsplit * fix_size, msg
 
         X = X[:nsplit * fix_size, :]
@@ -58,9 +60,7 @@ def k_fold(features, targets=None, nsplit=3, fix_size=None):
 
         return features, targets
     else:
-        features = []
-        for i in X:
-            features.append(i)
+        features = list(X)
         return features
 
 
@@ -81,26 +81,21 @@ def write_split(features, targets, fname, fformat='pickle'):
     data = {'features': features, 'targets': targets}
 
     if fformat == 'json':
-        # JSON format can't take numpy arrays. Convert to lists.
-        seralized_features = []
-        for f in features:
-            seralized_features.append(f.tolist())
+        seralized_features = [f.tolist() for f in features]
         data['features'] = seralized_features
 
-        seralized_targets = []
-        for t in targets:
-            seralized_targets.append(t.tolist())
+        seralized_targets = [t.tolist() for t in targets]
         data['targets'] = seralized_targets
 
-        with open('{}.json'.format(fname), 'w') as textfile:
+        with open(f'{fname}.json', 'w') as textfile:
             json.dump(data, textfile)
 
     elif fformat == 'pickle':
-        with open('{}.pickle'.format(fname), 'wb') as textfile:
+        with open(f'{fname}.pickle', 'wb') as textfile:
             pickle.dump(data, textfile, protocol=pickle.HIGHEST_PROTOCOL)
 
     else:
-        raise NotImplementedError('{} format not supported'.format(fformat))
+        raise NotImplementedError(f'{fformat} format not supported')
 
 
 def read_split(fname, fformat='pickle'):
@@ -121,24 +116,20 @@ def read_split(fname, fformat='pickle'):
         A list of targets lists of length nsplit.
     """
     if fformat == 'json':
-        with open('{}.json'.format(fname), 'r') as textfile:
+        with open(f'{fname}.json', 'r') as textfile:
             data = json.load(textfile)
     elif fformat == 'pickle':
-        with open('{}.pickle'.format(fname), 'rb') as textfile:
+        with open(f'{fname}.pickle', 'rb') as textfile:
             data = pickle.load(textfile)
     else:
-        raise NotImplementedError('{} format not supported'.format(fformat))
+        raise NotImplementedError(f'{fformat} format not supported')
 
     features, targets = data['features'], data['targets']
 
     # Convert JSON output back to numpy arrays.
     if fformat == 'json':
-        features_reformat = []
-        for f in features:
-            features_reformat.append(np.asarray(f))
-        targets_reformat = []
-        for t in targets:
-            targets_reformat.append(np.asarray(t))
+        features_reformat = [np.asarray(f) for f in features]
+        targets_reformat = [np.asarray(t) for t in targets]
         features, targets = features_reformat, targets_reformat
 
     return features, targets

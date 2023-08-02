@@ -6,13 +6,60 @@ from sklearn.cluster import KMeans
 transition_metals = ['Ti', 'V', 'Cr', 'Mn', 'Fe', 'Co', 'Ni', 'Cu', 'Zn',
                      'Zr', 'Nb', 'Mo', 'Tc', 'Ru', 'Rh', 'Pd', 'Ag', 'Cd',
                      'Hf', 'Ta', 'W', 'Re', 'Os', 'Ir', 'Pt', 'Au', 'Hg']
-metals = ['Li', 'Be', 'Na', 'Mg', 'K', 'Ca', 'Rb', 'Sr', 'Cs', 'Ba', 'Fr',
-          'Ra', 'La', 'Ce', 'Pr', 'Nd', 'Pm', 'Sm',
-          'Eu', 'Gd', 'Tb', 'Dy', 'Ho', 'Er', 'Tm', 'Yb', 'Lu', 'Ac', 'Th',
-          'Pa', 'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk',
-          'Cf', 'Es', 'Fm', 'Md', 'No', 'Lw', 'B', 'Al', 'Si', 'Ga', 'Ge',
-          'In', 'Sn', 'Tl', 'Pb']
-metals.extend(transition_metals)
+metals = [
+    'Li',
+    'Be',
+    'Na',
+    'Mg',
+    'K',
+    'Ca',
+    'Rb',
+    'Sr',
+    'Cs',
+    'Ba',
+    'Fr',
+    'Ra',
+    'La',
+    'Ce',
+    'Pr',
+    'Nd',
+    'Pm',
+    'Sm',
+    'Eu',
+    'Gd',
+    'Tb',
+    'Dy',
+    'Ho',
+    'Er',
+    'Tm',
+    'Yb',
+    'Lu',
+    'Ac',
+    'Th',
+    'Pa',
+    'U',
+    'Np',
+    'Pu',
+    'Am',
+    'Cm',
+    'Bk',
+    'Cf',
+    'Es',
+    'Fm',
+    'Md',
+    'No',
+    'Lw',
+    'B',
+    'Al',
+    'Si',
+    'Ga',
+    'Ge',
+    'In',
+    'Sn',
+    'Tl',
+    'Pb',
+    *transition_metals,
+]
 
 
 def stoichiometry(atoms):
@@ -51,10 +98,7 @@ def is_metal(chemical_symbol):
     metal : Boolean
         Whether it's a metal.
     """
-    metal = False
-    if chemical_symbol in metals:
-        metal = True
-    return(metal)
+    return chemical_symbol in metals
 
 
 def is_oxide(atoms):
@@ -75,22 +119,19 @@ def is_oxide(atoms):
     elements = list(num_dict.keys())[1:]
     all_count = list(num_dict.values())[0]
     for element in elements:
-        if element in transition_metals:
-            if num_dict[element]/all_count*1.0 > 0.25:
-                try:
-                    if num_dict['O']/num_dict[element] >= 1:
-                        # print("Materials class likely a metal oxide.")
-                        oxide = True
-                except KeyError as e:
-                    pass
-        elif element in metals:
-            if num_dict[element]/all_count*1.0 > 0.25:
-                try:
-                    if num_dict['O']/num_dict[element] >= 1:
-                        # print("Materials class likely a metal oxide.")
-                        oxide = True
-                except KeyError as e:
-                    pass
+        if (
+            element in transition_metals
+            and num_dict[element] / all_count > 0.25
+            or element not in transition_metals
+            and element in metals
+            and num_dict[element] / all_count > 0.25
+        ):
+            try:
+                if num_dict['O']/num_dict[element] >= 1:
+                    # print("Materials class likely a metal oxide.")
+                    oxide = True
+            except KeyError as e:
+                pass
     return(oxide)
 
 
@@ -113,8 +154,7 @@ def slab_layers(atoms, max_layers=20, tolerance=0.5):
     layer_atoms : list of list
         Each sublist contains the atom indices of the atoms in that layer.
     """
-    oxide = is_oxide(atoms)
-    if oxide:
+    if oxide := is_oxide(atoms):
         stoi = stoichiometry(atoms)
         elements = list(stoi.keys())[1:]
         for element in elements:

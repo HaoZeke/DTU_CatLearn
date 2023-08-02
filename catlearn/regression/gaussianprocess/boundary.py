@@ -22,9 +22,7 @@ class Boundary_conditions:
             bounds=self.create_restricted(GP,X,Y,parameters)
         elif self.bound_type=='educated':
             bounds=self.create_educated(GP,X,Y,parameters)
-        if log:
-            return {key:np.log(value) for key,value in bounds.items()}
-        return bounds
+        return {key:np.log(value) for key,value in bounds.items()} if log else bounds
 
     def create_no(self,parameters):
         " Create the boundary condition, where no information is known "
@@ -34,13 +32,14 @@ class Boundary_conditions:
     def create_length(self,GP,X,Y,parameters):
         " Create the boundary condition, where it is known that the length must be larger than a value "
         eps_mach_lower=10*np.sqrt(2.0*np.finfo(float).eps)
-        bounds={}
-        for para in sorted(set(parameters)):
-            if para=='length':
-                bounds[para]=self.length_bound(X,Y,GP,scale=self.scale)
-            else:
-                bounds[para]=np.array([[eps_mach_lower,1/eps_mach_lower]]*parameters.count(para))
-        return bounds
+        return {
+            para: self.length_bound(X, Y, GP, scale=self.scale)
+            if para == 'length'
+            else np.array(
+                [[eps_mach_lower, 1 / eps_mach_lower]] * parameters.count(para)
+            )
+            for para in sorted(set(parameters))
+        }
 
     def create_restricted(self,GP,X,Y,parameters):
         " Create the boundary condition, where it is known that the length must be larger than a value and a large noise is not favorable for regression "

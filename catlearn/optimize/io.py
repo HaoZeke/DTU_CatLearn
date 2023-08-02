@@ -44,15 +44,16 @@ def ase_to_catlearn(list_atoms):
     list_train = np.reshape(list_train, (number_images, num_atoms * 3))
     list_targets = np.reshape(list_targets, (number_images, 1))
     list_gradients = np.reshape(list_gradients, (number_images, num_atoms * 3))
-    results = {'first_image': images[0],
-               'last_image': images[1],
-               'images': images,
-               'list_train': list_train,
-               'list_targets': list_targets,
-               'list_gradients': list_gradients,
-               'constraints': constraints,
-               'num_atoms': num_atoms}
-    return results
+    return {
+        'first_image': images[0],
+        'last_image': images[1],
+        'images': images,
+        'list_train': list_train,
+        'list_targets': list_targets,
+        'list_gradients': list_gradients,
+        'constraints': constraints,
+        'num_atoms': num_atoms,
+    }
 
 
 def array_to_ase(input_array, num_atoms):
@@ -75,8 +76,7 @@ def array_to_ase(input_array, num_atoms):
     x_pos = atoms_pos[:, 0]
     y_pos = atoms_pos[:, 1]
     z_pos = atoms_pos[:, 2]
-    pos_ase = list(zip(x_pos, y_pos, z_pos))
-    return pos_ase
+    return list(zip(x_pos, y_pos, z_pos))
 
 
 def array_to_atoms(input_array):
@@ -93,8 +93,7 @@ def array_to_atoms(input_array):
     Position of the atoms in ASE format.
     """
 
-    atoms = np.reshape(input_array, (int(len(input_array) / 3), 3))  # Check.
-    return atoms
+    return np.reshape(input_array, (len(input_array) // 3, 3))
 
 
 def print_info_neb(self):
@@ -212,8 +211,10 @@ def print_version(version):
 
 
 def print_cite_mlmin():
-    msg = "-----------------------------------------------------------"
-    msg += "-----------------------------------------------------------\n"
+    msg = (
+        "-----------------------------------------------------------"
+        + "-----------------------------------------------------------\n"
+    )
     msg += "You are using ML-Min and CatLearn. Please cite: \n"
     msg += "[1] M. H. Hansen, J. A. Garrido Torres, P. C. Jennings, "
     msg += "Z. Wang, J. R. Boes, O. G. Mamun and T. Bligaard. "
@@ -230,8 +231,10 @@ def print_cite_mlmin():
 
 
 def print_cite_mlneb():
-    msg = "-----------------------------------------------------------"
-    msg += "-----------------------------------------------------------\n"
+    msg = (
+        "-----------------------------------------------------------"
+        + "-----------------------------------------------------------\n"
+    )
     msg += "You are using ML-NEB and CatLearn. Please cite: \n"
     msg += "[1] J. A. Garrido Torres, M. H. Hansen, P. C. Jennings, "
     msg += "J. R. Boes and T. Bligaard. Phys. Rev. Lett. 122, 156001. "

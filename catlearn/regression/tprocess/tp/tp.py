@@ -236,9 +236,8 @@ class TProcess:
         # Noise is always in the TP
         if 'noise' in new_params:
             self.hp['noise']=np.array(new_params['noise'],dtype=float).reshape(-1)
-        else:
-            if 'noise' not in self.hp:
-                self.hp['noise']=np.array([-8.0])
+        elif 'noise' not in self.hp:
+            self.hp['noise']=np.array([-8.0])
         if 'noise_deriv' in new_params:
             self.hp['noise_deriv']=np.array(new_params['noise_deriv'],dtype=float).reshape(-1)
         return self.hp
@@ -277,7 +276,7 @@ class TProcess:
                 hp_deriv['noise']=np.diag(np.array([2*np.exp(2*self.hp['noise'].item(0))]*m_data).reshape(-1))
         if 'noise_deriv' in hp:
             hp_deriv['noise_deriv']=np.diag(np.array([0.0]*n_data+[2*np.exp(2*self.hp['noise_deriv'].item(0))]*(m_data-n_data)).reshape(-1))
-        hp_deriv.update(self.kernel.get_gradients(X,hp,KXX=KXX,dis_m=dis_m))
+        hp_deriv |= self.kernel.get_gradients(X,hp,KXX=KXX,dis_m=dis_m)
         return hp_deriv
 
     def check_attributes(self):
@@ -291,5 +290,5 @@ class TProcess:
         return copy.deepcopy(self)
 
     def __repr__(self):
-        return "TProcess(prior={}, kernel={}, hp={}, use_derivatives={}, correction={})".format(self.prior,self.kernel,self.hp,self.use_derivatives,self.correction)
+        return f"TProcess(prior={self.prior}, kernel={self.kernel}, hp={self.hp}, use_derivatives={self.use_derivatives}, correction={self.correction})"
 

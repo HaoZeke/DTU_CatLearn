@@ -47,18 +47,15 @@ gadb = DataConnection('../../data/gadb.db')
 
 # Get all relaxed candidates from the db file.
 all_cand = gadb.get_all_relaxed_candidates(use_extinct=False)
-print('Loaded {} atoms objects'.format(len(all_cand)))
+print(f'Loaded {len(all_cand)} atoms objects')
 
 # Generate the feature matrix.
 fgen = FeatureGenerator()
 features = fgen.return_vec(all_cand, [fgen.eigenspectrum_vec])
-print('Generated {} feature matrix'.format(np.shape(features)))
+print(f'Generated {np.shape(features)} feature matrix')
 
-# Get the target values.
-targets = []
-for a in all_cand:
-    targets.append(a.info['key_value_pairs']['raw_score'])
-print('Generated {} target vector'.format(np.shape(targets)))
+targets = [a.info['key_value_pairs']['raw_score'] for a in all_cand]
+print(f'Generated {np.shape(targets)} target vector')
 
 
 # It is important to note that the `all_cand` variable is simply a list of atoms objects. There are no constraints on how this should be set up, the above example is just a succinct method for generating the list.
@@ -73,8 +70,6 @@ print('Generated {} target vector'.format(np.shape(targets)))
 
 def rr_predict(train_features, train_targets, test_features, test_targets):
     """Function to perform the RR predictions."""
-    data = {}
-
     # Set up the ridge regression function.
     rr = RidgeRegression(W2=None, Vh=None, cv='loocv')
     b = rr.find_optimal_regularization(X=train_features, Y=train_targets)
@@ -90,10 +85,7 @@ def rr_predict(train_features, train_targets, test_features, test_targets):
         err.append(e)
     error = (sumd / len(test_features)) ** 0.5
 
-    data['result'] = error
-    data['size'] = len(train_targets)
-
-    return data
+    return {'result': error, 'size': len(train_targets)}
 
 
 # We can define any prediction routine in this format. The following provides a second example with Gaussian process predictions.
@@ -103,8 +95,6 @@ def rr_predict(train_features, train_targets, test_features, test_targets):
 
 def gp_predict(train_features, train_targets, test_features, test_targets):
     """Function to perform the GP predictions."""
-    data = {}
-
     kdict = [
         {'type': 'gaussian', 'width': 1., 'scaling': 1., 'dimension': 'single'},
         ]
@@ -114,8 +104,9 @@ def gp_predict(train_features, train_targets, test_features, test_targets):
 
     pred = gp.predict(test_fp=test_features)
 
-    data['result'] = get_error(pred['prediction'],
-                               test_targets)['rmse_average']
+    data = {
+        'result': get_error(pred['prediction'], test_targets)['rmse_average']
+    }
     data['size'] = len(train_targets)
 
     return data

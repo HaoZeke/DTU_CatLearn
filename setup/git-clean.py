@@ -1,9 +1,12 @@
 """https://dzone.com/articles/python-script-delete-merged"""
+
 from subprocess import check_output
 import sys
 
-msg = '*****************************************************************\n'
-msg += 'Did not actually delete anything yet, pass in --confirm to delete\n'
+msg = (
+    '*****************************************************************\n'
+    + 'Did not actually delete anything yet, pass in --confirm to delete\n'
+)
 msg += '*****************************************************************'
 
 
@@ -19,7 +22,7 @@ def get_merged_branches():
 
 def delete_branch(branch):
     branch = ''.join(chr(x) for x in branch)
-    return check_output('git branch -D %s' % branch, shell=True)
+    return check_output(f'git branch -D {branch}', shell=True)
 
 
 if __name__ == '__main__':

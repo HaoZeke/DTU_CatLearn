@@ -110,7 +110,12 @@ class FactorizedGPP(Object_functions):
         noise,gpp_v=self.maximize_noise(GP,X,Y_p,parameters_set,parameters,prior,U,UTY,D,n_data)
         D_n,UDn,K_inv_diag,coef,prefactor2=self.get_prefactor2(noise,U,D,UTY)
         hp.update(dict(prefactor=np.array([0.5*np.log(prefactor2)]).reshape(-1),noise=np.array([noise]).reshape(-1)))
-        sol['x']=np.array(sum([list(np.array(hp[para]).reshape(-1)) for para in parameters_set],[]))
+        sol['x'] = np.array(
+            sum(
+                (list(np.array(hp[para]).reshape(-1)) for para in parameters_set),
+                [],
+            )
+        )
         sol['hp']=hp.copy()
         sol['GP']=self.update(GP,hp)
         sol['nfev']+=1

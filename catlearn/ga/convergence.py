@@ -34,10 +34,7 @@ class Convergence(object):
             self.count += 1
 
         # Check if the convergence count has been reached.
-        if self.count > repeat:
-            return True
-
-        return False
+        return self.count > repeat
 
     def stagnation(self, fitness, repeat):
         """Convergence based on a stagnation of the population.
@@ -62,7 +59,4 @@ class Convergence(object):
             self.count += 1
 
         # Check if the convergence count has been reached.
-        if self.count > repeat:
-            return True
-
-        return False
+        return self.count > repeat

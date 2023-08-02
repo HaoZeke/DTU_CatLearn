@@ -98,7 +98,7 @@ class Kernel:
         return copy.deepcopy(self)
     
     def __repr__(self):
-        return 'Kernel(use_fingerprint={}, hp={})'.format(self.use_fingerprint,self.hp)
+        return f'Kernel(use_fingerprint={self.use_fingerprint}, hp={self.hp})'
 
 
 class Kernel_Derivative:
@@ -256,4 +256,4 @@ class Kernel_Derivative:
         return copy.deepcopy(self)
     
     def __repr__(self):
-        return 'Kernel_Derivative(use_fingerprint={}, hp={})'.format(self.use_fingerprint,self.hp)
+        return f'Kernel_Derivative(use_fingerprint={self.use_fingerprint}, hp={self.hp})'

@@ -75,9 +75,7 @@ class GeneralGaussianProcess(object):
         """
         test_features = self.cleaner.transform(test_features)
 
-        pred = self.gp.predict(test_fp=test_features)
-
-        return pred
+        return self.gp.predict(test_fp=test_features)
 
     def _process_train_data(self, train_features, train_targets):
         """Prepare the data.

@@ -37,7 +37,7 @@ class TestMLNEB(unittest.TestCase):
         """Test ML-NEB algorithm running with an interpolated path"""
         n_images = 8
         images = [initial_structure]
-        for i in range(1, n_images-1):
+        for _ in range(1, n_images-1):
             image = initial_structure.copy()
             image.set_calculator(copy.deepcopy(ase_calculator))
             images.append(image)

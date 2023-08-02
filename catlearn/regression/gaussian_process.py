@@ -258,7 +258,7 @@ class GaussianProcess(object):
 
         # Perform some sanity checks.
         if self.N_D != f:
-            msg = str(f) + '!=' + str(self.N_D)
+            msg = f'{str(f)}!={str(self.N_D)}'
             msg += '\n The number of features has changed. Train a new '
             msg += 'model instead of trying to update.'
             raise AssertionError(msg)
@@ -323,7 +323,7 @@ class GaussianProcess(object):
                     self.kernel_list, self.scale_optimizer,
                     self.eval_gradients, None, eval_jac)
             lf = log_marginal_likelihood
-        elif loss_function == 'rmse' or loss_function == 'absolute':
+        elif loss_function in ['rmse', 'absolute']:
             # Define fixed arguments for rmse loss function
             args = (np.array(self.train_fp), np.array(self.train_target),
                     self.kernel_list, self.scale_optimizer, loss_function)
@@ -390,19 +390,17 @@ class GaussianProcess(object):
             _, self.N_D = np.shape(train_fp)
             self.train_fp = np.asarray(train_fp)
 
-        # Assign flags for gradient evaluation.
-        eval_gradients = False
-        if gradients is not None:
-            eval_gradients = True
-
         if kernel_list is not None:
+            eval_gradients = gradients is not None
             self.kernel_list, self.bounds = prepare_kernels(
                 kernel_list, regularization_bounds=regularization_bounds,
                 eval_gradients=eval_gradients, N_D=self.N_D
             )
         if train_target is not None:
-            msg = 'To update the data, both train_fp and train_target must be '
-            msg += 'defined.'
+            msg = (
+                'To update the data, both train_fp and train_target must be '
+                + 'defined.'
+            )
             assert train_fp is not None, msg
             self.update_data(train_fp, train_target, gradients,
                              scale_optimizer)

@@ -142,7 +142,7 @@ class ImportanceElimination(object):
             for g in range(step):
                 eliminated = [np.array(survivors)[s][g],
                               np.array(scores)[s][g]]
-                if len(meta) > 0:
+                if meta:
                     mean_meta = np.mean(meta, axis=0)
                     output.append(np.concatenate([eliminated, mean_meta[g]],
                                                  axis=0))
@@ -286,12 +286,7 @@ def _predictor(args):
     # Calculate the error on predictions.
     result = test_predict(predict, test, test_targets)
 
-    if isinstance(result, list):
-        error = result[0]
-        meta = result[1:]
-        return f, error, meta
-
-    return f, result
+    return (f, result[0], result[1:]) if isinstance(result, list) else (f, result)
 
 
 def feature_invariance(args):

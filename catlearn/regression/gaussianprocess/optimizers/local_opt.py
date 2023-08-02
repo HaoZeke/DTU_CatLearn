@@ -86,7 +86,7 @@ def run_golden(fun,line,tol=1e-5,maxiter=5000,optimize=True,multiple_max=True,ar
         else:
             i_sort=np.array([np.argmin(f_list[i_minimas])])
         for i_min in i_minimas[i_sort]:
-            x1=i_min-1 if i_min-1>=0 else i_min
+            x1 = i_min-1 if i_min >= 1 else i_min
             x4=i_min+1 if i_min+1<=len_l-1 else i_min
             f1,f4=f_list[x1],f_list[x4]
             theta0=line[x1].copy()

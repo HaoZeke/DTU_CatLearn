@@ -18,11 +18,7 @@ def random_permutation(parent_one):
     """
     p1 = copy.deepcopy(parent_one)
     index = np.random.randint(len(parent_one))
-    if p1[index] == 1.:
-        p1[index] = 0.
-    else:
-        p1[index] = 1.
-
+    p1[index] = 0. if p1[index] == 1. else 1.
     return p1
 
 

@@ -89,21 +89,20 @@ class AdsorbateFingerprintGenerator(BaseGenerator):
         labels.append('ground_state_magmom_term')
         if atoms is None:
             return labels
+        if ('key_value_pairs' in atoms.info and
+                'term' in atoms.info['key_value_pairs']):
+            term = atoms.info['key_value_pairs']['term']
+            numbers = [atomic_numbers[s] for s in string2symbols(term)]
+        elif 'termination_atoms' in atoms.subsets:
+            term = atoms.subsets['termination_atoms']
+            numbers = atoms.numbers[term]
         else:
-            if ('key_value_pairs' in atoms.info and
-                    'term' in atoms.info['key_value_pairs']):
-                term = atoms.info['key_value_pairs']['term']
-                numbers = [atomic_numbers[s] for s in string2symbols(term)]
-            elif 'termination_atoms' in atoms.subsets:
-                term = atoms.subsets['termination_atoms']
-                numbers = atoms.numbers[term]
-            else:
-                raise NotImplementedError("termination fingerprint.")
-            dat = list_mendeleev_params(numbers, params=self.slab_params)
-            result = list(np.nanmean(dat, axis=0))
-            result += [np.nanmean([gs_magmom[z] for z in numbers])]
-            check_labels(labels, result, atoms)
-            return result
+            raise NotImplementedError("termination fingerprint.")
+        dat = list_mendeleev_params(numbers, params=self.slab_params)
+        result = list(np.nanmean(dat, axis=0))
+        result += [np.nanmean([gs_magmom[z] for z in numbers])]
+        check_labels(labels, result, atoms)
+        return result
 
     def bulk(self, atoms=None):
         """Return a fingerprint vector with propeties averaged over
@@ -123,21 +122,20 @@ class AdsorbateFingerprintGenerator(BaseGenerator):
         labels.append('ground_state_magmom_bulk')
         if atoms is None:
             return labels
+        if ('key_value_pairs' in atoms.info and
+                'bulk' in atoms.info['key_value_pairs']):
+            bulk = atoms.info['key_value_pairs']['bulk']
+            numbers = [atomic_numbers[s] for s in string2symbols(bulk)]
+        elif 'bulk_atoms' in atoms.subsets:
+            bulk = atoms.subsets['bulk_atoms']
+            numbers = atoms.numbers[bulk]
         else:
-            if ('key_value_pairs' in atoms.info and
-                    'bulk' in atoms.info['key_value_pairs']):
-                bulk = atoms.info['key_value_pairs']['bulk']
-                numbers = [atomic_numbers[s] for s in string2symbols(bulk)]
-            elif 'bulk_atoms' in atoms.subsets:
-                bulk = atoms.subsets['bulk_atoms']
-                numbers = atoms.numbers[bulk]
-            else:
-                raise NotImplementedError("bulk fingerprint.")
-            dat = list_mendeleev_params(numbers, params=self.slab_params)
-            result = list(np.nanmean(dat, axis=0))
-            result += [np.nanmean([gs_magmom[z] for z in numbers])]
-            check_labels(labels, result, atoms)
-            return result
+            raise NotImplementedError("bulk fingerprint.")
+        dat = list_mendeleev_params(numbers, params=self.slab_params)
+        result = list(np.nanmean(dat, axis=0))
+        result += [np.nanmean([gs_magmom[z] for z in numbers])]
+        check_labels(labels, result, atoms)
+        return result
 
     def mean_chemisorbed_atoms(self, atoms=None):
         """Function that takes an atoms objects and returns a fingerprint
@@ -160,17 +158,16 @@ class AdsorbateFingerprintGenerator(BaseGenerator):
         labels.append('ground_state_magmom_ads1')
         if atoms is None:
             return labels
-        else:
-            # Get atomic number of alpha adsorbate atom.
-            chemisorbed_atoms = atoms.subsets['chemisorbed_atoms']
-            numbers = atoms.numbers[chemisorbed_atoms]
-            # Import CatLearn data on that element.
-            dat = list_mendeleev_params(numbers, params=default_params +
-                                        extra_ads_params)
-            result = list(np.nanmean(dat, axis=0))
-            result += [np.nanmean([gs_magmom[z] for z in numbers])]
-            check_labels(labels, result, atoms)
-            return result
+        # Get atomic number of alpha adsorbate atom.
+        chemisorbed_atoms = atoms.subsets['chemisorbed_atoms']
+        numbers = atoms.numbers[chemisorbed_atoms]
+        # Import CatLearn data on that element.
+        dat = list_mendeleev_params(numbers, params=default_params +
+                                    extra_ads_params)
+        result = list(np.nanmean(dat, axis=0))
+        result += [np.nanmean([gs_magmom[z] for z in numbers])]
+        check_labels(labels, result, atoms)
+        return result
 
     def mean_site(self, atoms=None):
         """Function that takes an atoms objects and returns a fingerprint
@@ -191,13 +188,12 @@ class AdsorbateFingerprintGenerator(BaseGenerator):
         labels.append('ground_state_magmom_site_av')
         if atoms is None:
             return labels
-        else:
-            numbers = [atoms[j].number for j in atoms.subsets['site_atoms']]
-            dat = list_mendeleev_params(numbers, params=self.slab_params)
-            result = list(np.nanmean(dat, axis=0))
-            result += [np.nanmean([gs_magmom[z] for z in numbers])]
-            check_labels(labels, result, atoms)
-            return result
+        numbers = [atoms[j].number for j in atoms.subsets['site_atoms']]
+        dat = list_mendeleev_params(numbers, params=self.slab_params)
+        result = list(np.nanmean(dat, axis=0))
+        result += [np.nanmean([gs_magmom[z] for z in numbers])]
+        check_labels(labels, result, atoms)
+        return result
 
     def min_site(self, atoms=None):
         """Function that takes an atoms objects and returns a fingerprint
@@ -218,13 +214,12 @@ class AdsorbateFingerprintGenerator(BaseGenerator):
         labels.append('ground_state_magmom_site_min')
         if atoms is None:
             return labels
-        else:
-            numbers = [atoms[j].number for j in atoms.subsets['site_atoms']]
-            dat = list_mendeleev_params(numbers, params=self.slab_params)
-            result = list(np.nanmin(dat, axis=0))
-            result += [np.nanmin([gs_magmom[z] for z in numbers])]
-            check_labels(labels, result, atoms)
-            return result
+        numbers = [atoms[j].number for j in atoms.subsets['site_atoms']]
+        dat = list_mendeleev_params(numbers, params=self.slab_params)
+        result = list(np.nanmin(dat, axis=0))
+        result += [np.nanmin([gs_magmom[z] for z in numbers])]
+        check_labels(labels, result, atoms)
+        return result
 
     def max_site(self, atoms=None):
         """Function that takes an atoms objects and returns a fingerprint
@@ -245,13 +240,12 @@ class AdsorbateFingerprintGenerator(BaseGenerator):
         labels.append('ground_state_magmom_site_max')
         if atoms is None:
             return labels
-        else:
-            numbers = [atoms[j].number for j in atoms.subsets['site_atoms']]
-            dat = list_mendeleev_params(numbers, params=self.slab_params)
-            result = list(np.nanmax(dat, axis=0))
-            result += [np.nanmax([gs_magmom[z] for z in numbers])]
-            check_labels(labels, result, atoms)
-            return result
+        numbers = [atoms[j].number for j in atoms.subsets['site_atoms']]
+        dat = list_mendeleev_params(numbers, params=self.slab_params)
+        result = list(np.nanmax(dat, axis=0))
+        result += [np.nanmax([gs_magmom[z] for z in numbers])]
+        check_labels(labels, result, atoms)
+        return result
 
     def median_site(self, atoms=None):
         """Function that takes an atoms objects and returns a fingerprint
@@ -272,13 +266,12 @@ class AdsorbateFingerprintGenerator(BaseGenerator):
         labels.append('ground_state_magmom_site_med')
         if atoms is None:
             return labels
-        else:
-            numbers = [atoms[j].number for j in atoms.subsets['site_atoms']]
-            dat = list_mendeleev_params(numbers, params=self.slab_params)
-            result = list(np.nanmedian(dat, axis=0))
-            result += [np.nanmedian([gs_magmom[z] for z in numbers])]
-            check_labels(labels, result, atoms)
-            return result
+        numbers = [atoms[j].number for j in atoms.subsets['site_atoms']]
+        dat = list_mendeleev_params(numbers, params=self.slab_params)
+        result = list(np.nanmedian(dat, axis=0))
+        result += [np.nanmedian([gs_magmom[z] for z in numbers])]
+        check_labels(labels, result, atoms)
+        return result
 
     def sum_site(self, atoms=None):
         """Function that takes an atoms objects and returns a fingerprint
@@ -299,13 +292,12 @@ class AdsorbateFingerprintGenerator(BaseGenerator):
         labels.append('ground_state_magmom_site_sum')
         if atoms is None:
             return labels
-        else:
-            numbers = [atoms[j].number for j in atoms.subsets['site_atoms']]
-            dat = list_mendeleev_params(numbers, params=self.slab_params)
-            result = list(np.nansum(dat, axis=0))
-            result += [np.nansum([gs_magmom[z] for z in numbers])]
-            check_labels(labels, result, atoms)
-            return result
+        numbers = [atoms[j].number for j in atoms.subsets['site_atoms']]
+        dat = list_mendeleev_params(numbers, params=self.slab_params)
+        result = list(np.nansum(dat, axis=0))
+        result += [np.nansum([gs_magmom[z] for z in numbers])]
+        check_labels(labels, result, atoms)
+        return result
 
     def generalized_cn(self, atoms):
         """Returns the averaged generalized coordination number over the site.
@@ -336,7 +328,7 @@ class AdsorbateFingerprintGenerator(BaseGenerator):
         elif len(site) == 5:
             cn_max = 30
         elif len(site) >= 6:
-            raise AssertionError('site of ' + str(len(site)) + ' atoms')
+            raise AssertionError(f'site of {len(site)} atoms')
 
         slab = atoms.subsets['slab_atoms']
         cm = np.array(atoms.connectivity)
@@ -349,13 +341,13 @@ class AdsorbateFingerprintGenerator(BaseGenerator):
 
         # Average coordination number of the site.
         av_cn_site = 0.
-        for j, atom in enumerate(site):
+        for atom in site:
             av_cn_site += np.sum(cm[atom, :][slab])
         av_cn_site /= len(site)
 
         # Generalized coordination number.
         gcn_site = 0.
-        for j, btom in enumerate(site_neighbors):
+        for btom in site_neighbors:
             cn_nn = np.sum(cm[btom, :][slab])
             gcn_site += cn_nn
         gcn_site /= (cn_max * len(site_neighbors))
@@ -365,10 +357,10 @@ class AdsorbateFingerprintGenerator(BaseGenerator):
         cn_chemi = 0.
         for atom in chemi:
             row = cm[atom, :]
-            cn = len([k for i, k in enumerate(row) if k > 0])
+            cn = len([k for k in row if k > 0])
             cn_chemi += cn
             gcn_chemi = 0.
-            for j, btom in enumerate(row):
+            for btom in row:
                 if btom > 0:
                     cn = len([k for k in cm[btom, :] if k > 0])
                     gcn_chemi += btom * cn / 12
@@ -398,22 +390,19 @@ class AdsorbateFingerprintGenerator(BaseGenerator):
         features : list
             If None was passed, the elements are strings, naming the feature.
         """
-        labels = ['count_' + str(j) + 'nn_site' for j in range(3, 31)]
         if atoms is None:
-            return labels
-        else:
-            # Only count neighbors once.
-            site_neighbors = list(np.unique(atoms.subsets['ligand_atoms']))
-            slab = atoms.subsets['slab_atoms']
+            return [f'count_{str(j)}nn_site' for j in range(3, 31)]
+        # Only count neighbors once.
+        site_neighbors = list(np.unique(atoms.subsets['ligand_atoms']))
+        slab = atoms.subsets['slab_atoms']
 
-            fingerprint_nn = np.zeros(28)
-            cm = np.array(atoms.connectivity)
-            np.fill_diagonal(cm, 0)
-            for i, atom in enumerate(site_neighbors):
-                fingerprint_nn[np.sum(cm[atom, :][slab])] += 1
+        fingerprint_nn = np.zeros(28)
+        cm = np.array(atoms.connectivity)
+        np.fill_diagonal(cm, 0)
+        for atom in site_neighbors:
+            fingerprint_nn[np.sum(cm[atom, :][slab])] += 1
 
-            fingerprint = list(fingerprint_nn)
-            return fingerprint
+        return list(fingerprint_nn)
 
     def bag_cn_general(self, atoms):
         """Count the number of neighbors of the site, which has a n number of
@@ -451,11 +440,12 @@ class AdsorbateFingerprintGenerator(BaseGenerator):
         """
         if atoms is None:
             try:
-                labels = ['bag_ads_' + chemical_symbols[z] for z in
-                          self.atom_types]
+                labels = [
+                    f'bag_ads_{chemical_symbols[z]}' for z in self.atom_types
+                ]
             except TypeError as error:
                 error.message += '\n Default atom_types require data to be' + \
-                    ' generated before feature labels. Call return_vec first.'
+                        ' generated before feature labels. Call return_vec first.'
                 raise
             return labels
         else:
@@ -481,25 +471,22 @@ class AdsorbateFingerprintGenerator(BaseGenerator):
             If None was passed, the elements are strings, naming the feature.
         """
         if atoms is None:
-            labels = ['bag_chemi_nn_' + chemical_symbols[z] for z in
-                      self.atom_types] + ['boc_site', 'n_site']
-            return labels
-        else:
-            # Adsorbate atoms connected to the surface.
-            chemi = atoms.subsets['chemisorbed_atoms']
-            cm = np.array(atoms.connectivity)
+            return [
+                f'bag_chemi_nn_{chemical_symbols[z]}' for z in self.atom_types
+            ] + ['boc_site', 'n_site']
+        # Adsorbate atoms connected to the surface.
+        chemi = atoms.subsets['chemisorbed_atoms']
+        cm = np.array(atoms.connectivity)
 
-            # Prepare bag of atom types.
-            bag = np.zeros(len(self.atom_types))
-            # Loop over elements that are present in the data set.
-            for j, z in enumerate(self.atom_types):
-                # Add neighbor counts to the bag of the relevant element.
-                bag[j] += np.sum(cm[:, chemi] * np.vstack(atoms.numbers == z))
+        # Prepare bag of atom types.
+        bag = np.zeros(len(self.atom_types))
+        # Loop over elements that are present in the data set.
+        for j, z in enumerate(self.atom_types):
+            # Add neighbor counts to the bag of the relevant element.
+            bag[j] += np.sum(cm[:, chemi] * np.vstack(atoms.numbers == z))
 
-            boc_site = np.sum(cm[:, chemi][atoms.subsets['site_atoms'], :])
-            site = len(atoms.subsets['site_atoms'])
-
-            return list(bag) + [boc_site, site]
+        boc_site = np.sum(cm[:, chemi][atoms.subsets['site_atoms'], :])
+        return list(bag) + [boc_site, len(atoms.subsets['site_atoms'])]
 
     def mean_surf_ligands(self, atoms=None):
         """Function that takes an atoms objects and returns a fingerprint
@@ -521,17 +508,16 @@ class AdsorbateFingerprintGenerator(BaseGenerator):
         labels.append('ground_state_magmom_surf_ligands')
         if atoms is None:
             return labels
-        else:
-            ligand_atoms = atoms.subsets['ligand_atoms']
-            numbers = atoms.numbers[ligand_atoms]
-            # Import CatLearn data on that element.
-            dat = list_mendeleev_params(numbers, params=self.slab_params)
-            result = list(np.nanmean(dat, axis=0))
-            result += [np.nanmean([gs_magmom[z] for z in numbers])]
-            # Append count of ligand atoms.
-            result = [len(ligand_atoms), len(np.unique(numbers))] + result
-            check_labels(labels, result, atoms)
-            return result
+        ligand_atoms = atoms.subsets['ligand_atoms']
+        numbers = atoms.numbers[ligand_atoms]
+        # Import CatLearn data on that element.
+        dat = list_mendeleev_params(numbers, params=self.slab_params)
+        result = list(np.nanmean(dat, axis=0))
+        result += [np.nanmean([gs_magmom[z] for z in numbers])]
+        # Append count of ligand atoms.
+        result = [len(ligand_atoms), len(np.unique(numbers))] + result
+        check_labels(labels, result, atoms)
+        return result
 
     def ads_sum(self, atoms=None):
         """Function that takes an atoms objects and returns a fingerprint
@@ -552,13 +538,12 @@ class AdsorbateFingerprintGenerator(BaseGenerator):
         labels.append('ground_state_magmom_ads_sum')
         if atoms is None:
             return labels
-        else:
-            numbers = [atoms[j].number for j in atoms.subsets['ads_atoms']]
-            dat = list_mendeleev_params(numbers, params=ads_params)
-            result = list(np.nansum(dat, axis=0))
-            result += [np.nansum([gs_magmom[z] for z in numbers])]
-            check_labels(labels, result, atoms)
-            return result
+        numbers = [atoms[j].number for j in atoms.subsets['ads_atoms']]
+        dat = list_mendeleev_params(numbers, params=ads_params)
+        result = list(np.nansum(dat, axis=0))
+        result += [np.nansum([gs_magmom[z] for z in numbers])]
+        check_labels(labels, result, atoms)
+        return result
 
     def ads_av(self, atoms=None):
         """Function that takes an atoms objects and returns a fingerprint
@@ -579,13 +564,12 @@ class AdsorbateFingerprintGenerator(BaseGenerator):
         labels.append('ground_state_magmom_ads_av')
         if atoms is None:
             return labels
-        else:
-            numbers = [atoms[j].number for j in atoms.subsets['ads_atoms']]
-            dat = list_mendeleev_params(numbers, params=ads_params)
-            result = list(np.nanmean(dat, axis=0))
-            result += [np.nanmean([gs_magmom[z] for z in numbers])]
-            check_labels(labels, result, atoms)
-            return result
+        numbers = [atoms[j].number for j in atoms.subsets['ads_atoms']]
+        dat = list_mendeleev_params(numbers, params=ads_params)
+        result = list(np.nanmean(dat, axis=0))
+        result += [np.nanmean([gs_magmom[z] for z in numbers])]
+        check_labels(labels, result, atoms)
+        return result
 
     def strain(self, atoms=None):
         """Return a fingerprint with the espected strain of the
@@ -603,44 +587,36 @@ class AdsorbateFingerprintGenerator(BaseGenerator):
         """
         if atoms is None:
             return ['strain_site', 'strain_term']
+        if ('key_value_pairs' in atoms.info and
+                'term' in atoms.info['key_value_pairs']):
+            term = atoms.info['key_value_pairs']['term']
+            term_numbers = [atomic_numbers[s] for s in
+                            string2symbols(term)]
+        elif 'termination_atoms' in atoms.subsets:
+            term = atoms.subsets['termination_atoms']
+            term_numbers = atoms.numbers[term]
         else:
-            if ('key_value_pairs' in atoms.info and
-                    'term' in atoms.info['key_value_pairs']):
-                term = atoms.info['key_value_pairs']['term']
-                term_numbers = [atomic_numbers[s] for s in
-                                string2symbols(term)]
-            elif 'termination_atoms' in atoms.subsets:
-                term = atoms.subsets['termination_atoms']
-                term_numbers = atoms.numbers[term]
-            else:
-                raise NotImplementedError("strain fingerprint.")
-            if ('key_value_pairs' in atoms.info and
-                    'bulk' in atoms.info['key_value_pairs']):
-                bulk = atoms.info['key_value_pairs']['bulk']
-                bulk_numbers = [atomic_numbers[s] for s in
-                                string2symbols(bulk)]
-            elif 'bulk_atoms' in atoms.subsets:
-                bulk = atoms.subsets['bulk_atoms']
-                bulk_numbers = atoms.numbers[bulk]
-            else:
-                raise NotImplementedError("strain fingerprint.")
-            site = atoms.subsets['site_atoms']
-            site_numbers = atoms.numbers[site]
-            rbulk = []
-            rterm = []
-            rsite = []
-            for b in bulk_numbers:
-                rbulk.append(get_radius(b))
-            for t in term_numbers:
-                rterm.append(get_radius(t))
-            for z in site_numbers:
-                rsite.append(get_radius(z))
-            av_term = np.average(rterm)
-            av_bulk = np.average(rbulk)
-            av_site = np.average(rsite)
-            strain_site = (av_site - av_bulk) / av_bulk
-            strain_term = (av_term - av_bulk) / av_bulk
-            return [strain_site, strain_term]
+            raise NotImplementedError("strain fingerprint.")
+        if ('key_value_pairs' in atoms.info and
+                'bulk' in atoms.info['key_value_pairs']):
+            bulk = atoms.info['key_value_pairs']['bulk']
+            bulk_numbers = [atomic_numbers[s] for s in
+                            string2symbols(bulk)]
+        elif 'bulk_atoms' in atoms.subsets:
+            bulk = atoms.subsets['bulk_atoms']
+            bulk_numbers = atoms.numbers[bulk]
+        else:
+            raise NotImplementedError("strain fingerprint.")
+        site_numbers = atoms.numbers[atoms.subsets['site_atoms']]
+        rbulk = [get_radius(b) for b in bulk_numbers]
+        rterm = [get_radius(t) for t in term_numbers]
+        rsite = [get_radius(z) for z in site_numbers]
+        av_term = np.average(rterm)
+        av_bulk = np.average(rbulk)
+        av_site = np.average(rsite)
+        strain_site = (av_site - av_bulk) / av_bulk
+        strain_term = (av_term - av_bulk) / av_bulk
+        return [strain_site, strain_term]
 
     def bag_edges_ads(self, atoms):
         """Returns bag of connections, counting only the bonds within the
@@ -661,34 +637,33 @@ class AdsorbateFingerprintGenerator(BaseGenerator):
         symbols = np.array([chemical_symbols[z] for z in self.atom_types])
         rows, cols = np.meshgrid(symbols, symbols)
         pairs = np.core.defchararray.add(rows, cols)
-        labels = ['boc_' + c + '_ads' for c in
-                  pairs[np.triu_indices_from(pairs)]]
+        labels = [f'boc_{c}_ads' for c in pairs[np.triu_indices_from(pairs)]]
         if atoms is None:
             return labels
-        else:
-            # empty bag of connection types.
-            boc = np.zeros([n_elements, n_elements])
+        # empty bag of connection types.
+        boc = np.zeros([n_elements, n_elements])
 
-            natoms = len(atoms)
-            cm = np.array(atoms.connectivity)
-            np.fill_diagonal(cm, 0)
+        natoms = len(atoms)
+        cm = np.array(atoms.connectivity)
+        np.fill_diagonal(cm, 0)
 
-            # Ignore connections with and within the slab.
-            slab = atoms.subsets['slab_atoms']
-            cm[slab, :] = 0
-            cm[:, slab] = 0
+        # Ignore connections with and within the slab.
+        slab = atoms.subsets['slab_atoms']
+        cm[slab, :] = 0
+        cm[:, slab] = 0
 
-            bonds = np.where(np.ravel(np.triu(cm)) > 0)[0]
-            for b in bonds:
-                # Get bonded atomic numbers.
-                z_row, z_col = np.unravel_index(b, [natoms, natoms])
-                bond_index = sorted((atoms.numbers[z_row],
-                                     atoms.numbers[z_col]))
-                bond_type = tuple((self.atom_types.index(bond_index[0]),
-                                   self.atom_types.index(bond_index[1])))
-                # Count bonds in upper triangle.
-                boc[bond_type] += 1
-            return list(boc[np.triu_indices_from(boc)])
+        bonds = np.where(np.ravel(np.triu(cm)) > 0)[0]
+        for b in bonds:
+            # Get bonded atomic numbers.
+            z_row, z_col = np.unravel_index(b, [natoms, natoms])
+            bond_index = sorted((atoms.numbers[z_row],
+                                 atoms.numbers[z_col]))
+            bond_type = self.atom_types.index(
+                bond_index[0]
+            ), self.atom_types.index(bond_index[1])
+            # Count bonds in upper triangle.
+            boc[bond_type] += 1
+        return list(boc[np.triu_indices_from(boc)])
 
     def bag_edges_chemi(self, atoms):
         """Returns bag of connections, counting only the bonds within the
@@ -710,8 +685,7 @@ class AdsorbateFingerprintGenerator(BaseGenerator):
         # Make array of connection types.
         rows, cols = np.meshgrid(symbols, symbols)
         pairs = np.core.defchararray.add(rows, cols)
-        labels = ['boc_' + c + '_chemi' for c in
-                  pairs[np.triu_indices_from(pairs)]]
+        labels = [f'boc_{c}_chemi' for c in pairs[np.triu_indices_from(pairs)]]
         if atoms is None:
             return labels
         # empty bag of connection types.
@@ -732,8 +706,9 @@ class AdsorbateFingerprintGenerator(BaseGenerator):
             z_row, z_col = np.unravel_index(b, [natoms, natoms])
             bond_index = sorted((atoms.numbers[z_row],
                                  atoms.numbers[z_col]))
-            bond_type = tuple((self.atom_types.index(bond_index[0]),
-                               self.atom_types.index(bond_index[1])))
+            bond_type = self.atom_types.index(
+                bond_index[0]
+            ), self.atom_types.index(bond_index[1])
             # Count bonds in upper triangle.
             boc[bond_type] += 1
 
@@ -770,31 +745,30 @@ class AdsorbateFingerprintGenerator(BaseGenerator):
 
         # Add pairs to make labels.
         pairs = np.core.defchararray.add(rows, cols)
-        labels = ['bea_' + c + '_ads' for c in
-                  pairs[np.triu_indices_from(pairs)]]
+        labels = [f'bea_{c}_ads' for c in pairs[np.triu_indices_from(pairs)]]
         if atoms is None:
             return labels
-        else:
-            # empty bag of connection types.
-            boc = np.zeros([n_elements_ads, n_elements])
+        # empty bag of connection types.
+        boc = np.zeros([n_elements_ads, n_elements])
 
-            natoms = len(atoms)
-            ads_atoms = atoms.subsets['ads_atoms']
-            # n_ads_atoms = len(atoms.subsets['ads_atoms'])
-            cm = np.array(atoms.connectivity)[ads_atoms, :]
-            np.fill_diagonal(cm, 0)
+        natoms = len(atoms)
+        ads_atoms = atoms.subsets['ads_atoms']
+        # n_ads_atoms = len(atoms.subsets['ads_atoms'])
+        cm = np.array(atoms.connectivity)[ads_atoms, :]
+        np.fill_diagonal(cm, 0)
 
-            bonds = np.where(np.ravel(np.triu(cm)) > 0)[0]
-            for b in bonds:
-                # Get bonded atomic numbers.
-                z_ads, z_all = np.unravel_index(b, [natoms, natoms])
-                bond_index = (atoms.numbers[ads_atoms][z_ads],
-                              atoms.numbers[z_all])
-                bond_type = tuple((self.ads_atom_types.index(bond_index[0]),
-                                   self.atom_types.index(bond_index[1])))
-                # Count bonds in upper triangle.
-                boc[bond_type] += 1
-            return list(boc[np.triu_indices_from(boc)])
+        bonds = np.where(np.ravel(np.triu(cm)) > 0)[0]
+        for b in bonds:
+            # Get bonded atomic numbers.
+            z_ads, z_all = np.unravel_index(b, [natoms, natoms])
+            bond_index = (atoms.numbers[ads_atoms][z_ads],
+                          atoms.numbers[z_all])
+            bond_type = self.ads_atom_types.index(
+                bond_index[0]
+            ), self.atom_types.index(bond_index[1])
+            # Count bonds in upper triangle.
+            boc[bond_type] += 1
+        return list(boc[np.triu_indices_from(boc)])
 
     def en_difference_ads(self, atoms=None):
         """Returns a list of electronegativity metrics, squared and summed over
@@ -810,7 +784,7 @@ class AdsorbateFingerprintGenerator(BaseGenerator):
         features : list
             If None was passed, the elements are strings, naming the feature.
         """
-        labels = ['dist_' + s + '_ads' for s in electronegativities]
+        labels = [f'dist_{s}_ads' for s in electronegativities]
         if atoms is None:
             return labels
         cm = atoms.connectivity
@@ -838,7 +812,7 @@ class AdsorbateFingerprintGenerator(BaseGenerator):
         features : list
             If None was passed, the elements are strings, naming the feature.
         """
-        labels = ['dist_' + s + '_chemi' for s in electronegativities]
+        labels = [f'dist_{s}_chemi' for s in electronegativities]
         if atoms is None:
             return labels
         cm = atoms.connectivity
@@ -869,7 +843,7 @@ class AdsorbateFingerprintGenerator(BaseGenerator):
         features : list
             If None was passed, the elements are strings, naming the feature.
         """
-        labels = ['dist_' + s + '_active' for s in electronegativities]
+        labels = [f'dist_{s}_active' for s in electronegativities]
         if atoms is None:
             return labels
         cm = atoms.connectivity
@@ -903,12 +877,11 @@ class AdsorbateFingerprintGenerator(BaseGenerator):
         """
         if atoms is None:
             return ['delta_energy']
-        else:
-            try:
-                delta = float(atoms.info['key_value_pairs']['delta_energy'])
-            except KeyError:
-                delta = np.nan
-            return [delta]
+        try:
+            delta = float(atoms.info['key_value_pairs']['delta_energy'])
+        except KeyError:
+            delta = np.nan
+        return [delta]
 
     def db_size(self, atoms=None):
         """Return a fingerprint containing the number of layers in the slab,
@@ -925,21 +898,19 @@ class AdsorbateFingerprintGenerator(BaseGenerator):
         features : list
             If None was passed, the elements are strings, naming the feature.
         """
-        labels = ['layers', 'size', 'coverage']
         if atoms is None:
-            return labels
-        else:
-            try:
-                layers = float(atoms.info['key_value_pairs']['layers'])
-            except KeyError:
-                layers = np.nan
-            try:
-                n = float(atoms.info['key_value_pairs']['n'])
-            except KeyError:
-                n = np.nan
-            size = len(atoms.subsets['termination_atoms'])
-            coverage = np.true_divide(n, size)
-            return layers, size, coverage
+            return ['layers', 'size', 'coverage']
+        try:
+            layers = float(atoms.info['key_value_pairs']['layers'])
+        except KeyError:
+            layers = np.nan
+        try:
+            n = float(atoms.info['key_value_pairs']['n'])
+        except KeyError:
+            n = np.nan
+        size = len(atoms.subsets['termination_atoms'])
+        coverage = np.true_divide(n, size)
+        return layers, size, coverage
 
     def dbid(self, atoms=None):
         """Return the contents of atoms.info['id'] as a feature.

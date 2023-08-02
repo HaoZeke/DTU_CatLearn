@@ -5,10 +5,12 @@ def theta_to_hp(theta,parameters):
     return {para_s:theta[np.array(parameters)==para_s] for para_s in sorted(set(parameters))}
 
 def hp_to_theta(hp):
-    " Transform a dictionary of hyperparameters to a list of values and a list of parameter categories " 
+    " Transform a dictionary of hyperparameters to a list of values and a list of parameter categories "
     parameters_set=sorted(set(hp.keys()))
     theta=[list(np.array(hp[para]).reshape(-1)) for para in parameters_set]
-    parameters=sum([[para]*len(theta[p]) for p,para in enumerate(parameters_set)],[])
+    parameters = sum(
+        ([para] * len(theta[p]) for p, para in enumerate(parameters_set)), []
+    )
     theta=np.array(sum(theta,[]))
     return theta,parameters
 

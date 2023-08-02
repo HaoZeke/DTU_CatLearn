@@ -36,22 +36,21 @@ def prediction(train_features, train_targets, test_features, test_targets):
     for tf, tt in zip(test_features, test_targets):
         p = (np.dot(coef, tf))
         sumd += (p - tt) ** 2
-    error = (sumd / len(test_features)) ** 0.5
-
-    return error
+    return (sumd / len(test_features)) ** 0.5
 
 
 def train_predict(train_features, train_targets):
     """Define the model."""
     kdict = [{'type': 'gaussian', 'width': 1., 'scaling': 1.,
               'dimension': 'single'}]
-    gp = GaussianProcess(train_fp=train_features,
-                         train_target=train_targets,
-                         kernel_list=kdict,
-                         regularization=np.sqrt(1e-2),
-                         optimize_hyperparameters=True,
-                         scale_data=True)
-    return gp
+    return GaussianProcess(
+        train_fp=train_features,
+        train_target=train_targets,
+        kernel_list=kdict,
+        regularization=np.sqrt(1e-2),
+        optimize_hyperparameters=True,
+        scale_data=True,
+    )
 
 
 def test_predict(gp, test_features, test_targets):
@@ -60,9 +59,7 @@ def test_predict(gp, test_features, test_targets):
                       get_validation_error=True,
                       get_training_error=True)
 
-    score = pred['validation_error']['rmse_average']
-
-    return score
+    return pred['validation_error']['rmse_average']
 
 
 class TestFeatureOptimization(unittest.TestCase):
@@ -71,8 +68,9 @@ class TestFeatureOptimization(unittest.TestCase):
     def test_expand(self):
         """Generate an extended feature space."""
         # Attach the database.
-        dd = DescriptorDatabase(db_name='{}/vec_store.sqlite'.format(wkdir),
-                                table='FingerVector')
+        dd = DescriptorDatabase(
+            db_name=f'{wkdir}/vec_store.sqlite', table='FingerVector'
+        )
 
         # Pull the features and targets from the database.
         names = dd.get_column_names()
@@ -89,7 +87,7 @@ class TestFeatureOptimization(unittest.TestCase):
         td, tf = np.shape(test_features)
 
         # Make some toy names.
-        names = ['f{}'.format(i) for i in range(f)]
+        names = [f'f{i}' for i in range(f)]
 
         # Perform feature engineering.
         extend = fe.single_transform(train_features)

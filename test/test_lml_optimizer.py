@@ -24,8 +24,9 @@ scale_optimizer = False
 def get_data():
     """Simple function to pull some training and test data."""
     # Attach the database.
-    dd = DescriptorDatabase(db_name='{}/vec_store.sqlite'.format(wkdir),
-                            table='FingerVector')
+    dd = DescriptorDatabase(
+        db_name=f'{wkdir}/vec_store.sqlite', table='FingerVector'
+    )
 
     # Pull the features and targets from the database.
     names = dd.get_column_names()
@@ -80,20 +81,25 @@ def lml_opt(train_features, train_targets, test_features,
     # Define fixed arguments for log_marginal_likelihood
     args = (np.array(train_features), np.array(train_targets),
             kdict, scale_optimizer, eval_gradients, None, eval_jac)
-    # Optimize
     if not global_opt:
-        popt = minimize(lml.log_marginal_likelihood, theta,
-                        args=args,
-                        method=algomin,
-                        jac=eval_jac,
-                        options={'disp': True},
-                        bounds=bounds)
-    else:
-        minimizer_kwargs = {'method': algomin, 'args': args,
-                            'bounds': bounds, 'jac': eval_jac}
-        popt = basinhopping(lml.log_marginal_likelihood, theta, niter=10,
-                            minimizer_kwargs=minimizer_kwargs, disp=True)
-    return popt
+        return minimize(
+            lml.log_marginal_likelihood,
+            theta,
+            args=args,
+            method=algomin,
+            jac=eval_jac,
+            options={'disp': True},
+            bounds=bounds,
+        )
+    minimizer_kwargs = {'method': algomin, 'args': args,
+                        'bounds': bounds, 'jac': eval_jac}
+    return basinhopping(
+        lml.log_marginal_likelihood,
+        theta,
+        niter=10,
+        minimizer_kwargs=minimizer_kwargs,
+        disp=True,
+    )
 
 
 def scale_test(train_matrix, train_targets, test_matrix):
@@ -134,7 +140,7 @@ def lml_plotter(train_features, train_targets, test_features, kernel_list,
                         [Y[i] + dY[i][d] * dx, Y[i] - dY[i][d] * dx], c='r')
         ax.axvline(x0)
         ax.set_ylabel('lml')
-        ax.set_xlabel('Hyperparameter ' + str(d))
+        ax.set_xlabel(f'Hyperparameter {str(d)}')
 
 
 if __name__ == '__main__':

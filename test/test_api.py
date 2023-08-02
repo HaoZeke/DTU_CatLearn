@@ -24,9 +24,15 @@ class TestEnergyLandscape(object):
         self.std = {}
 
     def _get_adsorbate_fields(self, d):
-        fields = [1, str(d.species), str(d.name), str(d.crystal),
-                  str(d.surf_lattice), str(d.facet), '2x2x3']
-        return fields
+        return [
+            1,
+            str(d.species),
+            str(d.name),
+            str(d.crystal),
+            str(d.surf_lattice),
+            str(d.facet),
+            '2x2x3',
+        ]
 
 
 class TestAPI(unittest.TestCase):
@@ -34,7 +40,7 @@ class TestAPI(unittest.TestCase):
 
     def test_networkx_api(self):
         """Test the ase api."""
-        gadb = DataConnection('{}/data/gadb.db'.format(wkdir))
+        gadb = DataConnection(f'{wkdir}/data/gadb.db')
         all_cand = gadb.get_all_relaxed_candidates()
         g = ase_to_networkx(all_cand[1])
 
@@ -46,7 +52,7 @@ class TestAPI(unittest.TestCase):
 
     def test_ase_api(self):
         """Test the ase api."""
-        gadb = DataConnection('{}/data/gadb.db'.format(wkdir))
+        gadb = DataConnection(f'{wkdir}/data/gadb.db')
         all_cand = gadb.get_all_relaxed_candidates()
 
         cf = all_cand[0].get_chemical_formula()

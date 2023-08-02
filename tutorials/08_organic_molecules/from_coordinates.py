@@ -76,11 +76,8 @@ for row in atoms:
         continue
 
 # Analyze the size of molecules in the db.
-print('pulled {} molecules from db'.format(len(alist)))
-size = []
-for a in alist:
-    size.append(len(a))
-
+print(f'pulled {len(alist)} molecules from db')
+size = [len(a) for a in alist]
 print('min: {0}, mean: {1:.0f}, max: {2} molecule size'.format(
     min(size), sum(size)/len(size), max(size)))
 
@@ -97,10 +94,8 @@ test_atoms = alist[train_size:]
 train_targets = np.asarray(targets[:train_size])
 test_targets = np.asarray(targets[train_size:])
 
-print('{} shape training atoms data'.format(
-    np.shape(train_atoms)))
-print('{} shape testing atoms data'.format(
-    np.shape(test_atoms)))
+print(f'{np.shape(train_atoms)} shape training atoms data')
+print(f'{np.shape(test_atoms)} shape testing atoms data')
 
 
 # ## Feature Generation <a name="feature-generation"></a>
@@ -115,8 +110,8 @@ generator = FeatureGenerator()
 
 generator.normalize_features(
     train_candidates=train_atoms, test_candidates=test_atoms)
-print('Max number of atom present in data: {}'.format(generator.atom_len))
-print('Atom numbers present in data: {}'.format(generator.atom_types))
+print(f'Max number of atom present in data: {generator.atom_len}')
+print(f'Atom numbers present in data: {generator.atom_types}')
 
 
 # We then generate the feature array for all the atoms objects. The `return_vec()` function takes the list of atoms objects and the type of features to generate.
@@ -130,10 +125,8 @@ train_features = generator.return_vec(
 test_features = generator.return_vec(
     test_atoms, [generator.eigenspectrum_vec, generator.composition_vec])
 
-print('{} shape training feature matrix'.format(
-    np.shape(train_features)))
-print('{} shape testing feature matrix'.format(
-    np.shape(test_features)))
+print(f'{np.shape(train_features)} shape training feature matrix')
+print(f'{np.shape(test_features)} shape testing feature matrix')
 
 
 # After this, we can analyze the distribution of the feature sets. In the following, we see a large number of features in the latter half of the vectors tend to be zero.
@@ -170,7 +163,7 @@ tf = train_features.copy()
 td = np.reshape(train_targets.copy(), (len(train_targets), 1))
 train_data = np.concatenate((tf, td), axis=1)
 
-columns = ['f{}'.format(i) for i in range(np.shape(train_features)[1])]
+columns = [f'f{i}' for i in range(np.shape(train_features)[1])]
 columns += ['target']
 index = range(np.shape(train_features)[0])
 df = pd.DataFrame(train_data, index=index, columns=columns)
@@ -307,8 +300,6 @@ plt.savefig('gaussian_process.png')
 
 def rr_predict(train_features, train_targets, test_features, test_targets):
     """Function to perform the RR predictions."""
-    data = {}
-
     # Set up the ridge regression function.
     rr = RidgeRegression(W2=None, Vh=None, cv='loocv')
     b = rr.find_optimal_regularization(X=train_features, Y=train_targets)
@@ -324,10 +315,7 @@ def rr_predict(train_features, train_targets, test_features, test_targets):
         err.append(e)
     error = (sumd / len(test_features)) ** 0.5
 
-    data['result'] = error
-    data['size'] = len(train_targets)
-
-    return data
+    return {'result': error, 'size': len(train_targets)}
 
 
 # We then run the cv and display the resulting learning curve.

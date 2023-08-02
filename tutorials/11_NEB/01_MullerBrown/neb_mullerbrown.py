@@ -50,7 +50,7 @@ n_images = 11
 initial_ase = read('initial_optimized.traj')
 final_ase = read('final_optimized.traj')
 images_ase = [initial_ase]
-for i in range(1, n_images-1):
+for _ in range(1, n_images-1):
     image_ase = initial_ase.copy()
     image_ase.set_calculator(copy.deepcopy(ase_calculator))
     images_ase.append(image_ase)
