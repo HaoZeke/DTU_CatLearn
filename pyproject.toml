@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+
+[project]
+name = "CatLearn"
+version = "3.2.2"
+authors = [
+    { name = "Andreas Vishart", email = "alyvi@dtu.dk" },
+    { name = "Rohit Goswami", email = "rog32@hi.is" },
+]
+description = "Machine Learning using atomic-scale calculations"
+readme = "README.md"
+keywords = ["python", "gaussian process", "machine learning", "regression"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Education",
+    "Programming Language :: Python :: 3",
+]
+
+[project.urls]
+repository = "https://github.com/haozeke/DTU_CatLearn/tree/inv_dist"
+
+[project.dependencies]
+numpy = "*"
+scipy = "*"
+ase = "*"
